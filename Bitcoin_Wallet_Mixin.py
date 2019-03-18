@@ -104,6 +104,48 @@ def remove_withdraw_address_of(mixinApiUserInstance, withdraw_asset_id, withdraw
             input_pin = input("pin:")
             mixinApiUserInstance.delAddress(address_id, input_pin)
  
+def explainUserData(inputJsonData):
+    result = {"user_id": inputJsonData.get("user_id"), "full_name":inputJsonData.get("full_name")}
+    return result
+def explainAssetData(inputJsonData):
+    this_account_name = inputJsonData.get("account_name")
+    this_asset_id     = inputJsonData.get("asset_id")
+    this_chain_id     = inputJsonData.get("chain_id")
+    this_asset_symbol = inputJsonData.get("symbol")
+    this_asset_name   = inputJsonData.get("name")
+
+
+    strPresent = ""
+
+    name = this_asset_name
+    if (this_chain_id == "43d61dcd-e413-450d-80b8-101d5e903357") and (this_asset_id != "43d61dcd-e413-450d-80b8-101d5e903357"):
+        #ETH based token
+        name = name + "(ERC20 token)"
+    if (this_chain_id == "6cfe566e-4aad-470b-8c9a-2fd35b49c68d") and (this_asset_id != "6cfe566e-4aad-470b-8c9a-2fd35b49c68d"):
+        #ETH based token
+        name = name + "(issued on EOS)"
+
+    if this_account_name == "":
+        #no need to show account name for EOS or Tron
+        strPresent = strPresent + "%s : %s , deposit is confirmed after %s confirmation, deposit to address:%s"%(name, inputJsonData.get("balance"), inputJsonData.get("confirmations"), inputJsonData.get("public_key"))
+    else:
+        strPresent = strPresent + "%s : %s , deposit is confirmed after %s confirmation, deposit to {account :%s, tag:%s} "%(name, inputJsonData.get("balance"), inputJsonData.get("confirmations"), inputJsonData.get("account_name"), inputJsonData.get("account_tag"))
+       
+    return strPresent
+
+
+
+def explainData(inputJsonData):
+    data = inputJsonData.get("data")
+    if "type" in data:
+        if (data.get("type") == "user"):
+            result = explainUserData(data)
+            return result
+        if (data.get("type") == "asset"):
+            result = explainAssetData(data)
+            return result
+
+
 def withdraw_asset(withdraw_asset_id, withdraw_asset_name):
     this_asset_balance = asset_balance(mixinApiNewUserInstance, withdraw_asset_id)
     withdraw_amount = input("%s %s in your account, how many %s you want to withdraw: "%(withdraw_asset_name, this_asset_balance, withdraw_asset_name))
@@ -135,9 +177,8 @@ def withdraw_asset(withdraw_asset_id, withdraw_asset_name):
 mixinApiBotInstance = MIXIN_API(mixin_config)
 
 PromptMsg  = "Read first user from local file new_users.csv        : loaduser\n"
-PromptMsg += "Read account asset balance                           : balance\n"
-PromptMsg += "Read Bitcoin                                         : btcbalance\n"
-PromptMsg += "Read USDT                                            : usdtbalance\n"
+PromptMsg += "Read account asset non-zero balance                  : balance\n"
+PromptMsg += "Read single asset balance                            : singlebalance\n"
 PromptMsg += "Read transaction of my account                       : searchsnapshots\n"
 PromptMsg += "Read one snapshots info of account                   : snapshot\n"
 PromptMsg += "Pay USDT to ExinCore to buy BTC                      : buybtc\n"
@@ -172,9 +213,11 @@ while ( 1 > 0 ):
                                                             session_id,
                                                             userid,
                                                             pin,"")
-            print("read user id:" + userid)
+            userInfo = mixinApiNewUserInstance.verifyPin(getpass.getpass("pin code"))
+            print(explainData(userInfo))
     if ( cmd == 'balance' ):
         AssetsInfo = mixinApiNewUserInstance.getMyAssets()
+        print(AssetsInfo)
         print("Your asset balance is\n===========")
         for eachAssest in AssetsInfo:
             print("%s: %s" %(eachAssest.get("name"), eachAssest.get("balance")))
@@ -187,15 +230,33 @@ while ( 1 > 0 ):
                 continue
             if (float(eachAssetInfo.get("balance")) > 0):
                 availableAssset.append(eachAssetInfo)
-    if ( cmd == 'btcbalance' ):
-        asset_result = mixinApiNewUserInstance.getAsset(BTC_ASSET_ID)
-        btcInfo = asset_result.get("data")
-        print("%s: %s, depositAddress: %s" %(btcInfo.get("name"), btcInfo.get("balance"), btcInfo.get("public_key")))
+    if ( cmd == 'singlebalance' ):
+        balance_promotmsg =  "Bitcoin balance  : btc\n"
 
-    if ( cmd == 'usdtbalance' ):
-        asset_result = mixinApiNewUserInstance.getAsset(USDT_ASSET_ID)
-        usdtInfo = asset_result.get("data")
-        print("%s: %s, depositAddress: %s" %(usdtInfo.get("name"), usdtInfo.get("balance"), usdtInfo.get("public_key")))
+        balance_promotmsg += "USDT balance     : usdt\n"
+        balance_promotmsg += "Ethereum balance : ETH\n"
+        balance_promotmsg += "EOS balance      : EOS\n"
+        balance_promotmsg += "any asset        : anyasset\n"
+        cmd_inline = input(balance_promotmsg)
+
+        if ( cmd_inline == 'btc' ):
+            asset_result = mixinApiNewUserInstance.getAsset(BTC_ASSET_ID)
+            print(explainData(asset_result))
+ 
+        if ( cmd_inline == 'usdt' ):
+            asset_result = mixinApiNewUserInstance.getAsset(USDT_ASSET_ID)
+            print(explainData(asset_result))
+
+        if ( cmd_inline == 'ETH' ):
+            asset_result = mixinApiNewUserInstance.getAsset("43d61dcd-e413-450d-80b8-101d5e903357")
+            print(explainData(asset_result))
+        if ( cmd_inline == 'EOS' ):
+            asset_result = mixinApiNewUserInstance.getAsset(EOS_ASSET_ID)
+            print(explainData(asset_result))
+        if ( cmd_inline == 'anyasset' ):
+            asset_result = mixinApiNewUserInstance.getAsset(input("input asset id:"))
+            print(explainData(asset_result))
+
     if ( cmd == 'snapshot'):
         input_snapshotid = input('input snapshots id')
         print(mixinApiNewUserInstance.account_snapshot(input_snapshotid))
