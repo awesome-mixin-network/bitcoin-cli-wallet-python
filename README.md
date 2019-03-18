@@ -68,9 +68,8 @@ Once an environment has been created, you may wish to activate it, e.g. by
 sourcing an activate script in its bin directory
 ```
 
-## Create mixin_labs-python-bot project
+## Clone the repo
 
-You need create project directory, make it as a python's “virtual environment”, and install the required packages.
 ```bash
 git clone https://github.com/myrual/mixin_labs-python-bot
 cd mixin_labs-python-bot
