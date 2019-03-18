@@ -11,7 +11,8 @@ The battery included python Bitcoin wallet can:
 * Withdraw Bitcoin to another Bitcoin address
 * Sell USDT to exchange and receive Bitcoin in 1 second
 * Sell Bitcoin to exchange and receive USDT in 1 second
-* Hold more 12 Other Blockchain token, LTC, Ethereum, Ethereum Classic, Doge, Dash, BCH, Zen, Sia, 
+* Hold 12 Other Blockchains token, LTC, Ethereum, Ethereum Classic, EOS, Doge, Dash, BCH, Zen, Nem, Ripple, Zcash, Sia.
+
 Full Mixin network resource [index](https://github.com/awesome-mixin-network/index_of_Mixin_Network_resource)
 
 ## Python 3 installation:
