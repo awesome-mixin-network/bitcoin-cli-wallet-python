@@ -1,6 +1,16 @@
-# Command line bitcoin wallet written in python script based on Mixin Network
+# Command line Bitcoin wallet written in python script based on Mixin Network
 ![cover](https://github.com/wenewzhang/mixin_labs-python-bot/raw/master/Bitcoin_python.jpg)
-This a command line bitcoin/altcoin wallet written in python script based on Mixin Network.
+This a command line bitcoin/altcoin wallet written in python script based on Mixin Network. It is a cold wallet, so no one can steal your Bitcoin. If someone managed to copy your private file, they can not steal your asset because they don't know the asset pin. 
+
+The wallet did not save your asset pin in local file.
+
+
+The battery included python Bitcoin wallet can:
+* create unlimited Bitcoin wallet
+* read Bitcoin balance
+* Withdraw Bitcoin to another Bitcoin address
+* Sell USDT to exchange and receive Bitcoin in 1 second
+* Sell Bitcoin to exchange and receive USDT in 1 second
 
 Full Mixin network resource [index](https://github.com/awesome-mixin-network/index_of_Mixin_Network_resource)
 
