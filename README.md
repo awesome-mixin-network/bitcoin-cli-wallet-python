@@ -71,8 +71,8 @@ sourcing an activate script in its bin directory
 ## Clone the repo
 
 ```bash
-git clone https://github.com/myrual/mixin_labs-python-bot
-cd mixin_labs-python-bot
+git clone https://github.com/awesome-mixin-network/bitcoin-cli-wallet-python.git
+cd bitcoin-cli-wallet-python
 python3 -m venv ./
 ```
 
@@ -84,7 +84,7 @@ bin		include		lib		pyvenv.cfg
 
 Once a virtual environment has been created, it can be “activated” using a script in the virtual environment’s binary directory.
 ```bash
-wenewzha:mixin_labs-python-bot wenewzhang$ source ./bin/activate
+source ./bin/activate
 (mixin_labs-python-bot) wenewzha:mixin_labs-python-bot wenewzhang$
 ```
 So that “python” or "pip" invoke from the virtual environment, and you can run installed scripts without having to use their full path.
