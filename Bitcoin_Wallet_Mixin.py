@@ -51,47 +51,7 @@ def generateMixinAPI(private_key,pin_token,session_id,user_id,pin,client_secret)
     mixin_config.pay_pin           = pin
     return  MIXIN_API(mixin_config)
 
-def readAssetBalance(asset_id):
-    with open('new_users.csv', newline='') as csvfile:
-        reader  = csv.reader(csvfile)
-        for row in reader:
-            pin         = row.pop()
-            userid      = row.pop()
-            session_id  = row.pop()
-            pin_token   = row.pop()
-            private_key = row.pop()
-            mixinApiNewUserInstance = generateMixinAPI(private_key,
-                                                        pin_token,
-                                                        session_id,
-                                                        userid,
-                                                        pin,"")
-            btcInfo = mixinApiNewUserInstance.getAsset(asset_id)
-            print("Account %s \'s balance is %s  " %(userid,btcInfo.get("data").get("balance")))
 
-def readAssetAddress(asset_id,isBTC = True):
-    with open('new_users.csv', newline='') as csvfile:
-        reader  = csv.reader(csvfile)
-        for row in reader:
-            pin         = row.pop()
-            userid      = row.pop()
-            session_id  = row.pop()
-            pin_token   = row.pop()
-            private_key = row.pop()
-            mixinApiNewUserInstance = generateMixinAPI(private_key,
-                                                        pin_token,
-                                                        session_id,
-                                                        userid,
-                                                        pin,"")
-            btcInfo = mixinApiNewUserInstance.getAsset(asset_id)
-            print(btcInfo)
-            if isBTC:
-                print("Account %s \'s Bitcoin wallet address is %s  " %(userid,btcInfo.get("data").get("public_key")))
-            else:
-                print("Account %s \'s EOS account name is %s, wallet address is %s  " %(userid,
-                                                                        btcInfo.get("data").get("account_name"),
-                                                                        btcInfo.get("data").get("account_tag")))
-
-            # print(btcInfo.get("data").get("public_key"))
 def gen_memo_ExinBuy(asset_id_string):
     return base64.b64encode(umsgpack.packb({"A": uuid.UUID("{" + asset_id_string + "}").bytes})).decode("utf-8")
 
