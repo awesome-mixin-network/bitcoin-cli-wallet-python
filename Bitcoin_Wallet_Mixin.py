@@ -8,6 +8,7 @@ import time
 import uuid
 import umsgpack
 import base64
+import getpass
 
 PIN             = "945689";
 PIN2            = "845689";
@@ -124,7 +125,7 @@ def withdraw_asset(withdraw_asset_id, withdraw_asset_name):
         confirm = input("Type YES to withdraw " + withdraw_amount + withdraw_asset_name + " to " + address_selected + "!!:")
         if (confirm == "YES"):
             this_uuid = str(uuid.uuid1())
-            asset_pin = input("pin:")
+            asset_pin = getpass.getpass("pin:")
             asset_withdraw_result = mixinApiNewUserInstance.withdrawals(address_id, withdraw_amount, "withdraw2"+address_pubkey, this_uuid, asset_pin)
             return asset_withdraw_result
     return None
@@ -272,7 +273,8 @@ while ( 1 > 0 ):
         print("uuid is: " + this_uuid)
         confirm_payUSDT = input("Input Yes to pay " + remainUSDT + " to ExinCore to buy Bitcoin")
         if ( confirm_payUSDT == "Yes" ):
-            input_pin = input("pin code:")
+            input_pin = getpass.getpass("pin code:")
+
             transfer_result = mixinApiNewUserInstance.transferTo(EXINCORE_UUID, USDT_ASSET_ID, remainUSDT, memo_for_exin, this_uuid, input_pin)
             snapShotID = transfer_result.get("data").get("snapshot_id")
             print("Pay USDT to ExinCore to buy BTC by uuid:" + this_uuid + ", you can verify the result on https://mixin.one/snapshots/" + snapShotID)
@@ -306,7 +308,7 @@ while ( 1 > 0 ):
                                                     userInfo.get("data").get("session_id"),
                                                     userInfo.get("data").get("user_id"),
                                                     "","")
-        defauled_pin = input("input pin:")
+        defauled_pin = getpass.getpass("input pin:")
         pinInfo = mixinApiNewUserInstance.updatePin(defauled_pin,"")
         print(pinInfo)
         time.sleep(3)
@@ -317,7 +319,7 @@ while ( 1 > 0 ):
     if ( cmd == 'allmoney' ):
         AssetsInfo = mixinApiNewUserInstance.getMyAssets()
         availableAssset = []
-        my_pin = input("pin:")
+        my_pin = getpass.getpass("pin:")
         for eachAssetInfo in AssetsInfo: 
             if (eachAssetInfo.get("balance") == "0"):
                 continue
@@ -351,7 +353,7 @@ while ( 1 > 0 ):
         Confirm = input(BTC_depost_address + ", Type YES to confirm")
         if (Confirm == "YES"):
             tag_content = input("write a tag")
-            input_pin = input("pin:")
+            input_pin = getpass.getpass("pin:")
             add_BTC_withdraw_addresses_result = mixinApiNewUserInstance.createAddress(BTC_ASSET_ID, BTC_depost_address, tag_content, asset_pin = input_pin)
             address_id = add_BTC_withdraw_addresses_result.get("data").get("address_id")
             print("the address :" + BTC_depost_address + " is added to your account with id:" + address_id)
@@ -360,7 +362,7 @@ while ( 1 > 0 ):
         Confirm = input(USDT_depost_address + ", Type YES to confirm")
         if (Confirm == "YES"):
             tag_content = input("tag:")
-            input_pin = input("pin:")
+            input_pin = getpass.getpass("pin:")
 
             USDT_withdraw_addresses = mixinApiNewUserInstance.createAddress(USDT_ASSET_ID, USDT_depost_address, tag_content,  asset_pin = input_pin)
             address_id = USDT_withdraw_addresses.get("data").get("address_id")
@@ -385,9 +387,9 @@ while ( 1 > 0 ):
             print(result)
 
     if ( cmd == 'verifypin' ):
-        input_pin = input("input your account pin:")
+        input_pin = getpass.getpass("input your account pin:")
         print(mixinApiNewUserInstance.verifyPin(input_pin))
     if ( cmd == 'updatepin' ):
-        newPin = input("input new pin:")
-        oldPin = input("input old pin:")
+        newPin = getpass.getpass("input new pin:")
+        oldPin = getpass.getpass("input old pin:")
         print(mixinApiNewUserInstance.updatePin(newPin,oldPin))
