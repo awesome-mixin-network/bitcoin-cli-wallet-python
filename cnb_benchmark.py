@@ -196,13 +196,14 @@ def account2accountWith(private_key, pin_token, session_id, userid, pin, target_
                                                             userid,
                                                             pin,"")
     thisuuid = str(uuid.uuid1())
+    kickofftimer = time.time()
     result = botInstance.transferTo(target_userid, asset_id, amount, "bench", thisuuid, pin)
     if result != False:
         if not("data" in result):
             print(result)
             print("HTTP OK:Internal Server Error: transfer %s %s from %s to %s with traceid %s"%(amount, asset_id, botInstance.client_id, target_userid, thisuuid))
         else:
-            print(result.get("data").get("snapshot_id"))
+            print("from %s to  %s with snap:%s within %d seconds"%(userid, target_userid, result.get("data").get("snapshot_id"), time.time() - kickofftimer))
     else:
 
         print("HTTP 500:transfer %s %s from %s to %s with traceid %s"%(amount, asset_id, botInstance.client_id, target_userid, thisuuid))
