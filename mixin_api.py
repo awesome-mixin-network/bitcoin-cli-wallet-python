@@ -181,7 +181,6 @@ class MIXIN_API:
             r = requests.get(url, headers={"Authorization": "Bearer " + auth_token})
 
         result_obj = r.json()
-        print(result_obj)
         return result_obj['data']
 
     """
@@ -244,7 +243,7 @@ class MIXIN_API:
                 auth_token = token.decode('utf8')
         r = requests.get(url, headers={"Authorization": "Bearer " + auth_token, 'Content-Type': 'application/json', 'Content-length': '0'})
         result_obj = r.json()
-        return result_obj
+        return result_obj.get("data")
 
 
 
@@ -614,7 +613,11 @@ class MIXIN_API:
         finalURL = "/network/snapshots?offset=%s&asset=%s&order=%s&limit=%d" % (offset, asset_id, order, limit)
 
 
-        return self.__genGetRequest(finalURL)
+        return self.__genNetworkGetRequest_snapshots(finalURL)
+    def snapshots_after(self, offset, asset_id, limit=100):
+        return self.snapshots(offset, asset_id, "ASC", limit)
+    def snapshots_before(self, offset, asset_id, limit=100):
+        return self.snapshots(offset, asset_id, "DESC", limit)
 
 
     """

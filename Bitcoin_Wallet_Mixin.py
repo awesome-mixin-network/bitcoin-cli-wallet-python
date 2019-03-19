@@ -181,6 +181,7 @@ PromptMsg += "Read account asset non-zero balance                  : balance\n"
 PromptMsg += "Read single asset balance                            : singlebalance\n"
 PromptMsg += "Read transaction of my account                       : searchsnapshots\n"
 PromptMsg += "Read one snapshots info of account                   : snapshot\n"
+PromptMsg += "Read one asset snapshots                             : assetsnapshots\n"
 PromptMsg += "Pay USDT to ExinCore to buy BTC                      : buybtc\n"
 PromptMsg += "Create wallet and update PIN                         : create\n"
 PromptMsg += "transafer all asset to my account in Mixin Messenger : allmoney\n"
@@ -260,10 +261,18 @@ while ( 1 > 0 ):
     if ( cmd == 'snapshot'):
         input_snapshotid = input('input snapshots id')
         print(mixinApiNewUserInstance.account_snapshot(input_snapshotid))
+    if ( cmd == 'assetsnapshots'):
+        timestamp = input("input timestamp, history after the time will be searched:")
+        limit = input("input max record you want to search:")
+        assetid = input("asset_id:")
+        snapshots_result_of_account = mixinApiNewUserInstance.snapshots_after(timestamp, assetid , limit=int(limit))
+        for singleSnapShot in snapshots_result_of_account:
+            print(singleSnapShot)
+
     if ( cmd == 'searchsnapshots'):
         timestamp = input("input timestamp, history after the time will be searched:")
         limit = input("input max record you want to search:")
-        snapshots_result_of_account = mixinApiNewUserInstance.account_snapshots_after(timestamp, asset_id = "", limit=limit)
+        snapshots_result_of_account = mixinApiNewUserInstance.account_snapshots_after(timestamp, asset_id = "", limit=int(limit))
         USDT_Snapshots_result_of_account = mixinApiNewUserInstance.find_mysnapshot_in(snapshots_result_of_account)
         for singleSnapShot in USDT_Snapshots_result_of_account:
             print(singleSnapShot)
