@@ -214,6 +214,7 @@ def RobotOpenFireTo(private_key, pin_token, session_id, userid, pin, target_grou
 
 master_node_file = "bench_users.csv"
 slave_node_file = "slave_user.csv"
+slave_node_file2 = "slave_user2.csv"
 PromptMsg  = "Read first user from local file bench_users.csv      : loadmaster\n"
 PromptMsg += "Read account asset non-zero balance                  : deposit\n"
 PromptMsg += "Read single asset balance                            : singlebalance\n"
@@ -222,6 +223,7 @@ PromptMsg += "Read one snapshots info of account                   : snapshot\n"
 PromptMsg += "Pay USDT to ExinCore to buy BTC                      : buybtc\n"
 PromptMsg += "Create master account                                : createmaster\n"
 PromptMsg += "Create slave account                                 : createslave\n"
+PromptMsg += "Create slave account2                                : createslave2\n"
 PromptMsg += "transafer all asset to my account in Mixin Messenger : allmoney\n"
 PromptMsg += "verify pin                                           : verifypin\n"
 PromptMsg += "transfer master CNB 2 slave                          : master2slave\n"
@@ -346,6 +348,39 @@ while ( 1 > 0 ):
                 pinInfo2 = mixinApiNewUserInstance.verifyPin(PIN)
                 print(pinInfo2)
 
+    if ( cmd == 'createslave2' ):
+        total_slave = input("how many slave2:")
+        for i in range(int(total_slave)):
+            key = RSA.generate(1024)
+            pubkey = key.publickey()
+            private_key = key.exportKey()
+            session_key = pubkeyContent(pubkey.exportKey())
+            # print(session_key)
+            input_session = session_key.decode()
+            account_name  = "Tom Bot"
+            body = {
+                "session_secret": input_session,
+                "full_name": account_name
+            }
+            token_from_freeweb = mixinApiBotInstance.fetchTokenForCreateUser(body,  "http://freemixinapptoken.myrual.me/token")
+            userInfo = mixinApiBotInstance.createUser(input_session, account_name, token_from_freeweb)
+            with open(slave_node_file2, 'a', newline='') as csvfile:
+                csvwriter = csv.writer(csvfile)
+                csvwriter.writerow([private_key.decode(),
+                                    userInfo.get("data").get("pin_token"),
+                                    userInfo.get("data").get("session_id"),
+                                    userInfo.get("data").get("user_id"),
+                                    PIN])
+                mixinApiNewUserInstance = generateMixinAPI(private_key.decode(),
+                                                        userInfo.get("data").get("pin_token"),
+                                                        userInfo.get("data").get("session_id"),
+                                                        userInfo.get("data").get("user_id"),
+                                                        PIN,"")
+                pinInfo = mixinApiNewUserInstance.updatePin(PIN,"")
+                pinInfo2 = mixinApiNewUserInstance.verifyPin(PIN)
+                print(pinInfo2)
+
+
 
 # c6d0c728-2624-429b-8e0d-d9d19b6592fa
     if ( cmd == 'allmoney' ):
@@ -365,10 +400,19 @@ while ( 1 > 0 ):
         input_pin = getpass.getpass("input your account pin:")
         print(mixinApiNewUserInstance.verifyPin(input_pin))
     if ( cmd == 'slavebalance'):
+        with open(slave_node_file2, newline='') as csvfile:
+            reader  = csv.reader(csvfile)
+
+            slave2_record = []
+            for row in reader:
+                slave2_record.append(row)
+            print("slave2 has %d"%len(slave2_record))
+ 
         with open(slave_node_file, newline='') as csvfile:
             reader  = csv.reader(csvfile)
 
             threads = []
+            slaveone_record = []
             for row in reader:
                 master_pin         = row.pop()
                 master_userid      = row.pop()
@@ -381,6 +425,8 @@ while ( 1 > 0 ):
                                                             master_userid,
                                                             master_pin,"")
                 threads.append(gevent.spawn(show_asset_balance, botInstance, CNB_ASSET_ID))
+                slaveone_record.append(row)
+            print("slaveone record %d"%len(slaveone_record))
             gevent.joinall(threads)
 
     if ( cmd == 'master2slave'):
@@ -431,14 +477,14 @@ while ( 1 > 0 ):
 
         all_target_userid_group = []
         threads = []
-        with open(slave_node_file, newline='') as csvfile:
+        with open(slave_node_file2, newline='') as csvfile:
             reader  = csv.reader(csvfile)
             for row in reader:
                 tmppin         = row.pop()
                 tmpuserid      = row.pop()
                 all_target_userid_group.append(tmpuserid)
 
-        target_userid_group = all_target_userid_group[0:20]
+        target_userid_group = all_target_userid_group
         with open(slave_node_file, newline='') as csvfile:
             reader  = csv.reader(csvfile)
             for row in reader:
