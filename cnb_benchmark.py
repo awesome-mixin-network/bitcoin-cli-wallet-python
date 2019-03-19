@@ -195,21 +195,26 @@ def account2accountWith(private_key, pin_token, session_id, userid, pin, target_
                                                             session_id,
                                                             userid,
                                                             pin,"")
-    botInstance.transferTo(target_userid, asset_id, amount, "bench", str(uuid.uuid1()), pin)
-
+    before = time.time()
+    thisuuid = str(uuid.uuid1())
+    result = botInstance.transferTo(target_userid, asset_id, amount, "bench", str(uuid.uuid1()), pin)
+    if "data" in result:
+        print("snapshots: %s, %d"%(result.get("data").get("snapshot_id"), time.time() - before))
+    else:
+        print(result)
 def RobotOpenFireTo(private_key, pin_token, session_id, userid, pin, target_group, eachPayAmount):
     botInstance = generateMixinAPI(private_key,
                                                             pin_token,
                                                             session_id,
                                                             userid,
                                                             pin,"")
-    while( int(asset_balance(botInstance, CNB_ASSET_ID)) > (int(eachPayAmount) * len(target_group))):
-        threads = []
-        for eachTargid in target_group:
-            if (eachTargid != userid):
-                threads.append(gevent.spawn(account2accountWith, private_key, pin_token, session_id, userid, pin, eachTargid, CNB_ASSET_ID, eachPayAmount))
-        gevent.joinall(threads)
-        print("one group end with len %d"%len(target_group))
+    threads = []
+    for eachTargid in target_group:
+        if (eachTargid != userid):
+            threads.append(gevent.spawn_later(10, account2accountWith, private_key, pin_token, session_id, userid, pin, eachTargid, CNB_ASSET_ID, eachPayAmount))
+    gevent.joinall(threads)
+    print("one group end with len %d"%len(target_group))
+
 master_node_file = "bench_users.csv"
 slave_node_file = "slave_user.csv"
 PromptMsg  = "Read first user from local file bench_users.csv      : loadmaster\n"
