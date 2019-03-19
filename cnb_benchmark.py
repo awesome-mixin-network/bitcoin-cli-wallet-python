@@ -196,9 +196,14 @@ def account2accountWith(private_key, pin_token, session_id, userid, pin, target_
                                                             userid,
                                                             pin,"")
     thisuuid = str(uuid.uuid1())
-    result = botInstance.transferTo(target_userid, asset_id, amount, "bench", str(uuid.uuid1()), pin)
-    if not("data" in result):
-        print(result)
+    result = botInstance.transferTo(target_userid, asset_id, amount, "bench", thisuuid, pin)
+    if result != False:
+        if not("data" in result):
+            print(result)
+            print("HTTP OK:Internal Server Error: transfer %s %s from %s to %s with traceid %s"%(amount, asset_id, botInstance.client_id, target_userid, thisuuid))
+    else:
+
+        print("HTTP 500:transfer %s %s from %s to %s with traceid %s"%(amount, asset_id, botInstance.client_id, target_userid, thisuuid))
 def RobotOpenFireTo(private_key, pin_token, session_id, userid, pin, target_group, eachPayAmount):
     startime = time.time()
     botInstance = generateMixinAPI(private_key,

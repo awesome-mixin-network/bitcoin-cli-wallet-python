@@ -266,8 +266,12 @@ class MIXIN_API:
         url = self.__genUrl(path)
 
         r = requests.post(url, json=body, headers=headers)
-        result_obj = r.json()
-        return result_obj
+        if (r.status_code == 200):
+            result_obj = r.json()
+            return result_obj
+        if (r.status_code == 500):
+            print("path: %s, body:%s"%(path, body_in_json))
+            return False
 
     """
     ============
