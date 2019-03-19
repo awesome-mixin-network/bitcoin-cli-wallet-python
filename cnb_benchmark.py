@@ -528,5 +528,6 @@ while ( 1 > 0 ):
                 slave_pin_token   = row.pop()
                 slave_private_key = row.pop()
                 threads.append(gevent.spawn_later(20, account2accountWith, slave_private_key, slave_pin_token, slave_session_id, slave_userid, slave_pin, target_userid_group[i], CNB_ASSET_ID, amount_to_pay))
+                i = i + 1
         gevent.joinall(threads)
 
