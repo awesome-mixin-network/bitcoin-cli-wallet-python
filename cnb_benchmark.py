@@ -9,6 +9,9 @@ import uuid
 import umsgpack
 import base64
 import getpass
+import gevent.monkey
+gevent.monkey.patch_socket()
+import gevent
 
 PIN             = "945689";
 PIN2            = "845689";
@@ -199,10 +202,12 @@ def RobotOpenFireTo(private_key, pin_token, session_id, userid, pin, target_grou
                                                             userid,
                                                             pin,"")
     while( int(asset_balance(botInstance, CNB_ASSET_ID)) > (int(eachPayAmount) * len(target_group))):
+        threads = []
         for eachTargid in target_group:
             if (eachTargid != userid):
-                print("from %s to %s"%(userid, eachTargid))
-                account2accountWith(private_key, pin_token, session_id, userid, pin, eachTargid, CNB_ASSET_ID, eachPayAmount)
+                threads.append(gevent.spawn(account2accountWith, private_key, pin_token, session_id, userid, pin, eachTargid, CNB_ASSET_ID, eachPayAmount))
+        gevent.joinall(threads)
+        print("one group end with len %d"%len(target_group))
 master_node_file = "bench_users.csv"
 slave_node_file = "slave_user.csv"
 PromptMsg  = "Read first user from local file bench_users.csv      : loadmaster\n"
@@ -353,6 +358,7 @@ while ( 1 > 0 ):
         input_pin = getpass.getpass("input your account pin:")
         print(mixinApiNewUserInstance.verifyPin(input_pin))
     if ( cmd == 'master2slave'):
+        amount_to_pay = input("amount:")
         with open(master_node_file, newline='') as csvfile:
             masterreader  = csv.reader(csvfile)
             row = next(masterreader)
@@ -369,4 +375,4 @@ while ( 1 > 0 ):
                     tmppin         = row.pop()
                     tmpuserid      = row.pop()
                     target_userid_group.append(tmpuserid)
-            RobotOpenFireTo(master_private_key, master_pin_token, master_session_id, master_userid, master_pin, target_userid_group, "100")
+            RobotOpenFireTo(master_private_key, master_pin_token, master_session_id, master_userid, master_pin, target_userid_group, amount_to_pay)
