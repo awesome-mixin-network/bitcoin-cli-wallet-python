@@ -1,3 +1,6 @@
+import gevent.monkey
+import gevent
+gevent.monkey.patch_all()
 from Crypto.PublicKey import RSA
 from mixin_api import MIXIN_API
 import uuid
@@ -9,9 +12,6 @@ import uuid
 import umsgpack
 import base64
 import getpass
-import gevent.monkey
-gevent.monkey.patch_socket()
-import gevent
 
 PIN             = "945689";
 PIN2            = "845689";
@@ -74,6 +74,8 @@ def asset_balance(mixinApiInstance, asset_id):
     return assetInfo.get("balance")
 
 
+def show_asset_balance(mixinApiInstance, asset_id):
+    print(asset_balance(mixinApiInstance, asset_id))
 def btc_balance_of(mixinApiInstance):
     return asset_balance(BTC_ASSET_ID)
 def usdt_balance_of(mixinApiInstance):
@@ -221,6 +223,7 @@ PromptMsg += "Create slave account                                 : createslave
 PromptMsg += "transafer all asset to my account in Mixin Messenger : allmoney\n"
 PromptMsg += "verify pin                                           : verifypin\n"
 PromptMsg += "master 2 slave                                       : master2slave\n"
+PromptMsg += "slave balance                                        : slavebalance\n"
 PromptMsg += "Exit                                                 : q\n"
 while ( 1 > 0 ):
     cmd = input(PromptMsg)
@@ -357,6 +360,25 @@ while ( 1 > 0 ):
     if ( cmd == 'verifypin' ):
         input_pin = getpass.getpass("input your account pin:")
         print(mixinApiNewUserInstance.verifyPin(input_pin))
+    if ( cmd == 'slavebalance'):
+        with open(slave_node_file, newline='') as csvfile:
+            reader  = csv.reader(csvfile)
+
+            threads = []
+            for row in reader:
+                master_pin         = row.pop()
+                master_userid      = row.pop()
+                master_session_id  = row.pop()
+                master_pin_token   = row.pop()
+                master_private_key = row.pop()
+                botInstance = generateMixinAPI(master_private_key,
+                                                            master_pin_token,
+                                                            master_session_id,
+                                                            master_userid,
+                                                            master_pin,"")
+                threads.append(gevent.spawn(show_asset_balance, botInstance, CNB_ASSET_ID))
+            gevent.joinall(threads)
+
     if ( cmd == 'master2slave'):
         amount_to_pay = input("amount:")
         with open(master_node_file, newline='') as csvfile:
