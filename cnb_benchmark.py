@@ -224,9 +224,10 @@ PromptMsg += "Create master account                                : createmaste
 PromptMsg += "Create slave account                                 : createslave\n"
 PromptMsg += "transafer all asset to my account in Mixin Messenger : allmoney\n"
 PromptMsg += "verify pin                                           : verifypin\n"
-PromptMsg += "master 2 slave                                       : master2slave\n"
-PromptMsg += "slave balance                                        : slavebalance\n"
+PromptMsg += "transfer master CNB 2 slave                          : master2slave\n"
+PromptMsg += "show all slave balance                               : slavebalance\n"
 PromptMsg += "slave 2 master                                       : slave2master\n"
+PromptMsg += "slave 2 slave                                        : slave2slave\n"
 PromptMsg += "Exit                                                 : q\n"
 while ( 1 > 0 ):
     cmd = input(PromptMsg)
