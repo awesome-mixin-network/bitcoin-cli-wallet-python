@@ -134,6 +134,7 @@ class MIXIN_API:
             tsseven = chr(tsseven)
             iterStringByTS = tszero + tsone + tstwo + tsthree + tsfour + tsfive + tssix + tsseven
 
+            print(iterStringByTS)
             toEncryptContent = self_pay_pin + tsstring + iterStringByTS
         else:
             toEncryptContent = self_pay_pin + tsstring + iterString
@@ -498,14 +499,17 @@ class MIXIN_API:
     """
     Transfer of assets between Mixin Network users.
     """
-    def transferTo(self, to_user_id, to_asset_id, to_asset_amount, memo, trace_uuid="", input_pin = ""):
+    def transferTo(self, to_user_id, to_asset_id, to_asset_amount, memo, trace_uuid="", input_pin = "", input_encrypted_pin = ""):
 
-        # generate encrypted pin
-        if (input_pin == ""):
-            encrypted_pin = self.genEncrypedPin()
+        if input_encrypted_pin == "":
+            # generate encrypted pin
+            if (input_pin == ""):
+                encrypted_pin = self.genEncrypedPin()
+            else:
+                encrypted_pin = self.genEncrypedPin_withPin(input_pin)
+
         else:
-            encrypted_pin = self.genEncrypedPin_withPin(input_pin)
-
+            encrypted_pin = input_encrypted_pin
         body = {'asset_id': to_asset_id, 'counter_user_id': to_user_id, 'amount': str(to_asset_amount),
                 'pin': encrypted_pin.decode('utf8'), 'trace_id': trace_uuid, 'memo': memo}
         if trace_uuid == "":
