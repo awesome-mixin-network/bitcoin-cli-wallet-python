@@ -203,7 +203,7 @@ def account2accountWith(private_key, pin_token, session_id, userid, pin, target_
             print(result)
             print("HTTP OK:Internal Server Error: transfer %s %s from %s to %s with traceid %s"%(amount, asset_id, botInstance.client_id, target_userid, thisuuid))
         else:
-            print("$d: from %s to  %s with snap:%s within %d seconds"%(kickofftimer, userid, target_userid, result.get("data").get("snapshot_id"), time.time() - kickofftimer))
+            print("%d: from %s to  %s with snap:%s within %d seconds"%(kickofftimer, userid, target_userid, result.get("data").get("snapshot_id"), time.time() - kickofftimer))
     else:
 
         print("HTTP 500:transfer %s %s from %s to %s with traceid %s"%(amount, asset_id, botInstance.client_id, target_userid, thisuuid))
