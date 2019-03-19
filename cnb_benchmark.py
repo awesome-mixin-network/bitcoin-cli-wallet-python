@@ -203,7 +203,7 @@ def account2accountWith(private_key, pin_token, session_id, userid, pin, target_
             print(result)
             print("HTTP OK:Internal Server Error: transfer %s %s from %s to %s with traceid %s"%(amount, asset_id, botInstance.client_id, target_userid, thisuuid))
         else:
-            print("from %s to  %s with snap:%s within %d seconds"%(userid, target_userid, result.get("data").get("snapshot_id"), time.time() - kickofftimer))
+            print("$d: from %s to  %s with snap:%s within %d seconds"%(kickofftimer, userid, target_userid, result.get("data").get("snapshot_id"), time.time() - kickofftimer))
     else:
 
         print("HTTP 500:transfer %s %s from %s to %s with traceid %s"%(amount, asset_id, botInstance.client_id, target_userid, thisuuid))
@@ -237,7 +237,7 @@ PromptMsg += "verify pin                                           : verifypin\n
 PromptMsg += "transfer master CNB 2 slave                          : master2slave\n"
 PromptMsg += "show all slave balance                               : slavebalance\n"
 PromptMsg += "slave 2 master                                       : slave2master\n"
-PromptMsg += "slave 2 slave                                        : slave2slave\n"
+PromptMsg += "slave 2 slave two                                    : slave2slavetwo\n"
 PromptMsg += "Exit                                                 : q\n"
 while ( 1 > 0 ):
     cmd = input(PromptMsg)
@@ -527,7 +527,7 @@ while ( 1 > 0 ):
                 slave_session_id  = row.pop()
                 slave_pin_token   = row.pop()
                 slave_private_key = row.pop()
-                threads.append(gevent.spawn_later(20, account2accountWith, slave_private_key, slave_pin_token, slave_session_id, slave_userid, slave_pin, target_userid_group[i], CNB_ASSET_ID, amount_to_pay))
+                threads.append(gevent.spawn_later(10, account2accountWith, slave_private_key, slave_pin_token, slave_session_id, slave_userid, slave_pin, target_userid_group[i], CNB_ASSET_ID, amount_to_pay))
                 i = i + 1
         gevent.joinall(threads)
 
