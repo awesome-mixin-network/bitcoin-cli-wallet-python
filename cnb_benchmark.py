@@ -201,6 +201,8 @@ def account2accountWith(private_key, pin_token, session_id, userid, pin, target_
         if not("data" in result):
             print(result)
             print("HTTP OK:Internal Server Error: transfer %s %s from %s to %s with traceid %s"%(amount, asset_id, botInstance.client_id, target_userid, thisuuid))
+        else:
+            print(result.get("data").get("snapshot_id"))
     else:
 
         print("HTTP 500:transfer %s %s from %s to %s with traceid %s"%(amount, asset_id, botInstance.client_id, target_userid, thisuuid))
@@ -501,3 +503,29 @@ while ( 1 > 0 ):
 
                 threads.append(gevent.spawn_later(10, RobotOpenFireTo, slave_private_key, slave_pin_token, slave_session_id, slave_userid, slave_pin, target_userid_group,  amount_to_pay))
         gevent.joinall(threads)
+    if ( cmd == 'slave2slavetwo'):
+        amount_to_pay = input("amount:")
+        account_amount = input("account_number:")
+        all_target_userid_group = []
+        with open(slave_node_file2, newline='') as csvfile:
+            reader  = csv.reader(csvfile)
+            for row in reader:
+                tmppin         = row.pop()
+                tmpuserid      = row.pop()
+                all_target_userid_group.append(tmpuserid)
+
+        target_userid_group = all_target_userid_group[0:account_amount]
+
+        threads = []
+        with open(slave_node_file, newline='') as csvfile:
+            reader  = csv.reader(csvfile)
+            i = 0
+            for row in reader:
+                slave_pin         = row.pop()
+                slave_userid      = row.pop()
+                slave_session_id  = row.pop()
+                slave_pin_token   = row.pop()
+                slave_private_key = row.pop()
+                threads.append(gevent.spawn_later(20, account2accountWith, slave_private_key, slave_pin_token, slave_session_id, slave_userid, slave_pin, target_userid_group[i], CNB_ASSET_ID, amount_to_pay))
+        gevent.joinall(threads)
+
