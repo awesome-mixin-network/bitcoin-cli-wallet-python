@@ -195,14 +195,12 @@ def account2accountWith(private_key, pin_token, session_id, userid, pin, target_
                                                             session_id,
                                                             userid,
                                                             pin,"")
-    before = time.time()
     thisuuid = str(uuid.uuid1())
     result = botInstance.transferTo(target_userid, asset_id, amount, "bench", str(uuid.uuid1()), pin)
-    if "data" in result:
-        print("snapshots: %s, %d"%(result.get("data").get("snapshot_id"), time.time() - before))
-    else:
+    if not("data" in result):
         print(result)
 def RobotOpenFireTo(private_key, pin_token, session_id, userid, pin, target_group, eachPayAmount):
+    startime = time.time()
     botInstance = generateMixinAPI(private_key,
                                                             pin_token,
                                                             session_id,
@@ -211,9 +209,8 @@ def RobotOpenFireTo(private_key, pin_token, session_id, userid, pin, target_grou
     threads = []
     for eachTargid in target_group:
         if (eachTargid != userid):
-            threads.append(gevent.spawn_later(10, account2accountWith, private_key, pin_token, session_id, userid, pin, eachTargid, CNB_ASSET_ID, eachPayAmount))
-    gevent.joinall(threads)
-    print("one group end with len %d"%len(target_group))
+            account2accountWith(private_key, pin_token, session_id, userid, pin, eachTargid, CNB_ASSET_ID, eachPayAmount)
+    print("one group end with len %d finished in %d"%(len(target_group), time.time() - startime))
 
 master_node_file = "bench_users.csv"
 slave_node_file = "slave_user.csv"
@@ -229,6 +226,7 @@ PromptMsg += "transafer all asset to my account in Mixin Messenger : allmoney\n"
 PromptMsg += "verify pin                                           : verifypin\n"
 PromptMsg += "master 2 slave                                       : master2slave\n"
 PromptMsg += "slave balance                                        : slavebalance\n"
+PromptMsg += "slave 2 master                                       : slave2master\n"
 PromptMsg += "Exit                                                 : q\n"
 while ( 1 > 0 ):
     cmd = input(PromptMsg)
@@ -386,6 +384,7 @@ while ( 1 > 0 ):
 
     if ( cmd == 'master2slave'):
         amount_to_pay = input("amount:")
+        loop_count = int(input("count:"))
         with open(master_node_file, newline='') as csvfile:
             masterreader  = csv.reader(csvfile)
             row = next(masterreader)
@@ -402,4 +401,51 @@ while ( 1 > 0 ):
                     tmppin         = row.pop()
                     tmpuserid      = row.pop()
                     target_userid_group.append(tmpuserid)
-            RobotOpenFireTo(master_private_key, master_pin_token, master_session_id, master_userid, master_pin, target_userid_group, amount_to_pay)
+            for i in range(loop_count):
+                RobotOpenFireTo(master_private_key, master_pin_token, master_session_id, master_userid, master_pin, target_userid_group, amount_to_pay)
+                print("%d round finished"%i)
+    if ( cmd == 'slave2master'):
+        amount_to_pay = input("amount:")
+        with open(master_node_file, newline='') as csvfile:
+            masterreader  = csv.reader(csvfile)
+            row = next(masterreader)
+            master_pin         = row.pop()
+            master_userid      = row.pop()
+ 
+            target_userid_group = []
+            threads = []
+            with open(slave_node_file, newline='') as csvfile:
+                reader  = csv.reader(csvfile)
+                for row in reader:
+
+                    slave_pin         = row.pop()
+                    slave_userid      = row.pop()
+                    slave_session_id  = row.pop()
+                    slave_pin_token   = row.pop()
+                    slave_private_key = row.pop()
+                    threads.append(gevent.spawn_later(10, account2accountWith, slave_private_key, slave_pin_token, slave_session_id, slave_userid, slave_pin, master_userid, CNB_ASSET_ID, amount_to_pay))
+            gevent.joinall(threads)
+    if ( cmd == 'slave2slave'):
+        amount_to_pay = input("amount:")
+
+        all_target_userid_group = []
+        threads = []
+        with open(slave_node_file, newline='') as csvfile:
+            reader  = csv.reader(csvfile)
+            for row in reader:
+                tmppin         = row.pop()
+                tmpuserid      = row.pop()
+                all_target_userid_group.append(tmpuserid)
+
+        target_userid_group = all_target_userid_group[0:20]
+        with open(slave_node_file, newline='') as csvfile:
+            reader  = csv.reader(csvfile)
+            for row in reader:
+                slave_pin         = row.pop()
+                slave_userid      = row.pop()
+                slave_session_id  = row.pop()
+                slave_pin_token   = row.pop()
+                slave_private_key = row.pop()
+
+                threads.append(gevent.spawn_later(10, RobotOpenFireTo, slave_private_key, slave_pin_token, slave_session_id, slave_userid, slave_pin, target_userid_group,  amount_to_pay))
+        gevent.joinall(threads)

@@ -133,8 +133,6 @@ class MIXIN_API:
             tssix = chr(tssix)
             tsseven = chr(tsseven)
             iterStringByTS = tszero + tsone + tstwo + tsthree + tsfour + tsfive + tssix + tsseven
-
-            print(iterStringByTS)
             toEncryptContent = self_pay_pin + tsstring + iterStringByTS
         else:
             toEncryptContent = self_pay_pin + tsstring + iterString
