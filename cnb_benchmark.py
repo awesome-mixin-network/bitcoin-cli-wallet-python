@@ -514,7 +514,7 @@ while ( 1 > 0 ):
                 tmpuserid      = row.pop()
                 all_target_userid_group.append(tmpuserid)
 
-        target_userid_group = all_target_userid_group[0:account_amount]
+        target_userid_group = all_target_userid_group[0:int(account_amount)]
 
         threads = []
         with open(slave_node_file, newline='') as csvfile:
