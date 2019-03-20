@@ -18,6 +18,22 @@ MASTER_UUID     = "28ee416a-0eaa-4133-bc79-9676909b7b4e";
 BTC_ASSET_ID    = "c6d0c728-2624-429b-8e0d-d9d19b6592fa";
 EOS_ASSET_ID    = "6cfe566e-4aad-470b-8c9a-2fd35b49c68d";
 USDT_ASSET_ID   = "815b0b1a-2764-3736-8faa-42d694fa620a"
+ETC_ASSET_ID    = "2204c1ee-0ea2-4add-bb9a-b3719cfff93a";
+XRP_ASSET_ID    = "23dfb5a5-5d7b-48b6-905f-3970e3176e27";
+XEM_ASSET_ID    = "27921032-f73e-434e-955f-43d55672ee31"
+ETH_ASSET_ID    = "43d61dcd-e413-450d-80b8-101d5e903357";
+DASH_ASSET_ID   = "6472e7e3-75fd-48b6-b1dc-28d294ee1476";
+DOGE_ASSET_ID   = "6770a1e5-6086-44d5-b60f-545f9d9e8ffd"
+LTC_ASSET_ID    = "76c802a2-7c88-447f-a93e-c29c9e5dd9c8";
+SIA_ASSET_ID    = "990c4c29-57e9-48f6-9819-7d986ea44985";
+ZEN_ASSET_ID    = "a2c5d22b-62a2-4c13-b3f0-013290dbac60"
+ZEC_ASSET_ID    = "c996abc9-d94e-4494-b1cf-2a3fd3ac5714"
+BCH_ASSET_ID    = "fd11b6e3-0b87-41f1-a41f-f0e9b49e5bf0"
+
+MIXIN_DEFAULT_CHAIN_GROUP = [BTC_ASSET_ID, EOS_ASSET_ID, USDT_ASSET_ID, ETC_ASSET_ID, XRP_ASSET_ID, XEM_ASSET_ID, ETH_ASSET_ID, DASH_ASSET_ID, DOGE_ASSET_ID, LTC_ASSET_ID, SIA_ASSET_ID, ZEN_ASSET_ID, ZEC_ASSET_ID, BCH_ASSET_ID]
+
+
+
 BTC_WALLET_ADDR = "14T129GTbXXPGXXvZzVaNLRFPeHXD1C25C";
 AMOUNT          = "0.001";
 
@@ -238,57 +254,21 @@ while ( 1 > 0 ):
             userInfo = mixinApiNewUserInstance.verifyPin(getpass.getpass("pin code"))
             print(explainData(userInfo))
     if ( cmd == 'balance' ):
-        btcasset_result = mixinApiNewUserInstance.getAsset(BTC_ASSET_ID).get("data")
-        usdtasset_result = mixinApiNewUserInstance.getAsset(USDT_ASSET_ID).get("data")
-        ether_asset_result = mixinApiNewUserInstance.getAsset("43d61dcd-e413-450d-80b8-101d5e903357").get("data")
-        ripple_asset_result = mixinApiNewUserInstance.getAsset("23dfb5a5-5d7b-48b6-905f-3970e3176e27").get("data")
-        bch_asset_result = mixinApiNewUserInstance.getAsset("fd11b6e3-0b87-41f1-a41f-f0e9b49e5bf0").get("data")
-        doge_asset_result = mixinApiNewUserInstance.getAsset("6770a1e5-6086-44d5-b60f-545f9d9e8ffd").get("data")
-
-
-
-
+        all_asset = mixinApiNewUserInstance.getMyAssets()
+        print(all_asset)
+        asset_id_groups_in_myassets = []
+        for eachAsset in all_asset:
+            asset_id_groups_in_myassets.append(eachAsset.get("asset_id"))
+        for eachAssetID in MIXIN_DEFAULT_CHAIN_GROUP:
+            if ( not (eachAssetID in asset_id_groups_in_myassets)):
+                mixinApiNewUserInstance.getAsset(eachAssetID)
 
         print("Your asset balance is\n===========")
-        print("%s: %s" %(btcasset_result.get("name").ljust(15),     btcasset_result.get("balance")))
-        print("%s: %s" %(usdtasset_result.get("name").ljust(15),    usdtasset_result.get("balance")))
-        print("%s: %s" %(ether_asset_result.get("name").ljust(15),  ether_asset_result.get("balance")))
-        print("%s: %s" %(ripple_asset_result.get("name").ljust(15), ripple_asset_result.get("balance")))
-        print("%s: %s" %(bch_asset_result.get("name").ljust(15),    bch_asset_result.get("balance")))
-        print("%s: %s" %(doge_asset_result.get("name").ljust(15),   doge_asset_result.get("balance")))
 
-
-
-
+        for eachAsset in all_asset:
+            print("%s: %s" %(eachAsset.get("name").ljust(15), eachAsset.get("balance")))
 
         print("===========")
-
-    if ( cmd == 'singlebalance' ):
-        balance_promotmsg =  "Bitcoin balance  : btc\n"
-
-        balance_promotmsg += "USDT balance     : usdt\n"
-        balance_promotmsg += "Ethereum balance : ETH\n"
-        balance_promotmsg += "EOS balance      : EOS\n"
-        balance_promotmsg += "any asset        : anyasset\n"
-        cmd_inline = input(balance_promotmsg)
-
-        if ( cmd_inline == 'btc' ):
-            asset_result = mixinApiNewUserInstance.getAsset(BTC_ASSET_ID)
-            print(explainData(asset_result))
- 
-        if ( cmd_inline == 'usdt' ):
-            asset_result = mixinApiNewUserInstance.getAsset(USDT_ASSET_ID)
-            print(explainData(asset_result))
-
-        if ( cmd_inline == 'ETH' ):
-            asset_result = mixinApiNewUserInstance.getAsset("43d61dcd-e413-450d-80b8-101d5e903357")
-            print(explainData(asset_result))
-        if ( cmd_inline == 'EOS' ):
-            asset_result = mixinApiNewUserInstance.getAsset(EOS_ASSET_ID)
-            print(explainData(asset_result))
-        if ( cmd_inline == 'anyasset' ):
-            asset_result = mixinApiNewUserInstance.getAsset(input("input asset id:"))
-            print(explainData(asset_result))
 
     if ( cmd == 'snapshot'):
         input_snapshotid = input('input snapshots id')
@@ -416,6 +396,8 @@ while ( 1 > 0 ):
         time.sleep(3)
         pinInfo2 = mixinApiNewUserInstance.verifyPin(defauled_pin)
         print(pinInfo2)
+        for eachAsset in MIXIN_DEFAULT_CHAIN_GROUP:
+            mixinApiNewUserInstance.getAsset(eachAsset)
 
 # c6d0c728-2624-429b-8e0d-d9d19b6592fa
     if ( cmd == 'allmoney' ):
