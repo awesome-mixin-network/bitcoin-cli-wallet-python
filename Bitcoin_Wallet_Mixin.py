@@ -176,26 +176,27 @@ def withdraw_asset(withdraw_asset_id, withdraw_asset_name, mixinAccountInstance)
 
 mixinApiBotInstance = MIXIN_API(mixin_config)
 
+padding = 70
 PromptMsg  = "Read first user from local file new_users.csv        : loaduser\n"
 PromptMsg += "Exit                                                 : q\n"
-loadedPromptMsg  = "Read account asset non-zero balance                  : balance\n"
-loadedPromptMsg += "Read single asset balance                            : singlebalance\n"
-loadedPromptMsg += "Read transaction of my account                       : searchsnapshots\n"
-loadedPromptMsg += "Read one snapshots info of account                   : snapshot\n"
-loadedPromptMsg += "Read one asset snapshots                             : assetsnapshots\n"
-loadedPromptMsg += "Pay USDT to ExinCore to buy BTC                      : buybtc\n"
-loadedPromptMsg += "Create wallet and update PIN                         : create\n"
-loadedPromptMsg += "transafer all asset to my account in Mixin Messenger : allmoney\n"
-loadedPromptMsg += "List account withdraw address                        : listaddress\n"
-loadedPromptMsg += "Add new withdraw address for Bitcoin                 : addbitcoinaddress\n"
-loadedPromptMsg += "Add new withdraw address for USDT                    : addusdtaddress\n"
-loadedPromptMsg += "Remove withdraw address for Bitcoin                  : removebtcaddress\n"
-loadedPromptMsg += "Remove withdraw address for Bitcoin                  : removeusdtaddress\n"
-loadedPromptMsg += "Withdraw BTC                                         : withdrawbtc\n"
-loadedPromptMsg += "Withdraw USDT                                        : withdrawusdt\n"
-loadedPromptMsg += "verify pin                                           : verifypin\n"
-loadedPromptMsg += "updatepin                                            : updatepin\n"
-loadedPromptMsg += "switch account                                       : switch\n"
+loadedPromptMsg  = "Read account asset non-zero balance".ljust(padding) + ": balance\n"
+loadedPromptMsg += "Read single asset balance".ljust(padding) + ": singlebalance\n"
+loadedPromptMsg += "Read transaction of my account".ljust(padding) + ": searchsnapshots\n"
+loadedPromptMsg += "Read one snapshots info of account".ljust(padding) + ": snapshot\n"
+loadedPromptMsg += "Read one asset snapshots".ljust(padding) + ": assetsnapshots\n"
+loadedPromptMsg += "Pay USDT to ExinCore to buy BTC".ljust(padding) + ": buybtc\n"
+loadedPromptMsg += "Create wallet and update PIN".ljust(padding) + ": create\n"
+loadedPromptMsg += "transafer all asset to my account in Mixin Messenger".ljust(padding) + ": allmoney\n"
+loadedPromptMsg += "List account withdraw address".ljust(padding) + ": listaddress\n"
+loadedPromptMsg += "Add new withdraw address for Bitcoin".ljust(padding) + ": addbitcoinaddress\n"
+loadedPromptMsg += "Add new withdraw address for USDT".ljust(padding) + ": addusdtaddress\n"
+loadedPromptMsg += "Remove withdraw address for Bitcoin".ljust(padding) + ": removebtcaddress\n"
+loadedPromptMsg += "Remove withdraw address for Bitcoin".ljust(padding) + ": removeusdtaddress\n"
+loadedPromptMsg += "Withdraw BTC".ljust(padding) + ": withdrawbtc\n"
+loadedPromptMsg += "Withdraw USDT".ljust(padding) + ": withdrawusdt\n"
+loadedPromptMsg += "verify pin".ljust(padding) + ": verifypin\n"
+loadedPromptMsg += "updatepin".ljust(padding) + ": updatepin\n"
+loadedPromptMsg += "switch account".ljust(padding) + ": switch\n"
 
 global mixinApiNewUserInstance
 mixinApiNewUserInstance = None
@@ -237,20 +238,31 @@ while ( 1 > 0 ):
             userInfo = mixinApiNewUserInstance.verifyPin(getpass.getpass("pin code"))
             print(explainData(userInfo))
     if ( cmd == 'balance' ):
-        AssetsInfo = mixinApiNewUserInstance.getMyAssets()
-        print(AssetsInfo)
+        btcasset_result = mixinApiNewUserInstance.getAsset(BTC_ASSET_ID).get("data")
+        usdtasset_result = mixinApiNewUserInstance.getAsset(USDT_ASSET_ID).get("data")
+        ether_asset_result = mixinApiNewUserInstance.getAsset("43d61dcd-e413-450d-80b8-101d5e903357").get("data")
+        ripple_asset_result = mixinApiNewUserInstance.getAsset("23dfb5a5-5d7b-48b6-905f-3970e3176e27").get("data")
+        bch_asset_result = mixinApiNewUserInstance.getAsset("fd11b6e3-0b87-41f1-a41f-f0e9b49e5bf0").get("data")
+        doge_asset_result = mixinApiNewUserInstance.getAsset("6770a1e5-6086-44d5-b60f-545f9d9e8ffd").get("data")
+
+
+
+
+
         print("Your asset balance is\n===========")
-        for eachAssest in AssetsInfo:
-            print("%s: %s" %(eachAssest.get("name"), eachAssest.get("balance")))
+        print("%s: %s" %(btcasset_result.get("name").ljust(15),     btcasset_result.get("balance")))
+        print("%s: %s" %(usdtasset_result.get("name").ljust(15),    usdtasset_result.get("balance")))
+        print("%s: %s" %(ether_asset_result.get("name").ljust(15),  ether_asset_result.get("balance")))
+        print("%s: %s" %(ripple_asset_result.get("name").ljust(15), ripple_asset_result.get("balance")))
+        print("%s: %s" %(bch_asset_result.get("name").ljust(15),    bch_asset_result.get("balance")))
+        print("%s: %s" %(doge_asset_result.get("name").ljust(15),   doge_asset_result.get("balance")))
+
+
+
+
+
         print("===========")
 
-
-        availableAssset = []
-        for eachAssetInfo in AssetsInfo: 
-            if (eachAssetInfo.get("balance") == "0"):
-                continue
-            if (float(eachAssetInfo.get("balance")) > 0):
-                availableAssset.append(eachAssetInfo)
     if ( cmd == 'singlebalance' ):
         balance_promotmsg =  "Bitcoin balance  : btc\n"
 
