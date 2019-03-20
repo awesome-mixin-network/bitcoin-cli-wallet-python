@@ -83,6 +83,16 @@ def btc_balance_of(mixinApiInstance):
 def usdt_balance_of(mixinApiInstance):
     return asset_balance(USDT_ASSET_ID)
 
+def strPresent_of_depositAddress_from(AssetData):
+    this_chain_id = AssetData.get("chain_id")
+    if( this_chain_id == EOS_ASSET_ID):
+        address_accountname = AssetData.get("account_name")
+        address_accounttag= AssetData.get("account_tag")
+        return "account: %s; memo: %s"%(address_accountname, address_accounttag)
+    else:
+        address_public = AssetData.get("public_key")
+        return "%s"%address_public
+
 def strPresent_of_asset_withdrawaddress(thisAddress, asset_id):
     address_id = thisAddress.get("address_id")
     address_pubkey = thisAddress.get("public_key")
@@ -196,26 +206,24 @@ padding = 70
 PromptMsg  = "Read first user from local file new_users.csv        : loaduser\n"
 PromptMsg += "Exit                                                 : q\n"
 loadedPromptMsg  = "Read account asset non-zero balance".ljust(padding) + ": balance\n"
-loadedPromptMsg += "Read single asset balance".ljust(padding) + ": singlebalance\n"
+loadedPromptMsg += "deposit asset ".ljust(padding) + ": deposit\n"
+loadedPromptMsg += "send asset ".ljust(padding) + ": send\n"
 loadedPromptMsg += "Read transaction of my account".ljust(padding) + ": searchsnapshots\n"
-loadedPromptMsg += "Read one snapshots info of account".ljust(padding) + ": snapshot\n"
-loadedPromptMsg += "Read one asset snapshots".ljust(padding) + ": assetsnapshots\n"
 loadedPromptMsg += "Pay USDT to ExinCore to buy BTC".ljust(padding) + ": buybtc\n"
-loadedPromptMsg += "Create wallet and update PIN".ljust(padding) + ": create\n"
 loadedPromptMsg += "transafer all asset to my account in Mixin Messenger".ljust(padding) + ": allmoney\n"
 loadedPromptMsg += "List account withdraw address".ljust(padding) + ": listaddress\n"
 loadedPromptMsg += "Add new withdraw address for Bitcoin".ljust(padding) + ": addbitcoinaddress\n"
 loadedPromptMsg += "Add new withdraw address for USDT".ljust(padding) + ": addusdtaddress\n"
 loadedPromptMsg += "Remove withdraw address for Bitcoin".ljust(padding) + ": removebtcaddress\n"
 loadedPromptMsg += "Remove withdraw address for Bitcoin".ljust(padding) + ": removeusdtaddress\n"
-loadedPromptMsg += "Withdraw BTC".ljust(padding) + ": withdrawbtc\n"
-loadedPromptMsg += "Withdraw USDT".ljust(padding) + ": withdrawusdt\n"
 loadedPromptMsg += "verify pin".ljust(padding) + ": verifypin\n"
 loadedPromptMsg += "updatepin".ljust(padding) + ": updatepin\n"
 loadedPromptMsg += "switch account".ljust(padding) + ": switch\n"
 
 global mixinApiNewUserInstance
+global mixin_account_name
 mixinApiNewUserInstance = None
+mixin_account_name = None
 while ( 1 > 0 ):
     if (mixinApiNewUserInstance != None):
         cmd = input(loadedPromptMsg)
@@ -252,10 +260,10 @@ while ( 1 > 0 ):
                                                             userid,
                                                             pin,"")
             userInfo = mixinApiNewUserInstance.verifyPin(getpass.getpass("pin code"))
-            print(explainData(userInfo))
+            mixin_account_name = userInfo.get("data").get("full_name")
+            print(mixin_account_name + " verified pin")
     if ( cmd == 'balance' ):
         all_asset = mixinApiNewUserInstance.getMyAssets()
-        print(all_asset)
         asset_id_groups_in_myassets = []
         for eachAsset in all_asset:
             asset_id_groups_in_myassets.append(eachAsset.get("asset_id"))
@@ -269,22 +277,54 @@ while ( 1 > 0 ):
             print("%s: %s" %(eachAsset.get("name").ljust(15), eachAsset.get("balance")))
 
         print("===========")
+    if (cmd == "deposit"):
 
-    if ( cmd == 'snapshot'):
-        input_snapshotid = input('input snapshots id')
-        print(mixinApiNewUserInstance.account_snapshot(input_snapshotid))
-    if ( cmd == 'assetsnapshots'):
-        timestamp = input("input timestamp, history after the time will be searched:")
-        limit = input("input max record you want to search:")
-        assetid = input("asset_id:")
-        snapshots_result_of_account = mixinApiNewUserInstance.snapshots_after(timestamp, assetid , limit=int(limit))
-        for singleSnapShot in snapshots_result_of_account:
-            print(singleSnapShot)
+        all_asset = mixinApiNewUserInstance.getMyAssets()
+        asset_id_groups_in_myassets = []
+        print("Your asset deposit address \n===========")
+
+        for eachAsset in all_asset:
+            print("%s: %s" %(eachAsset.get("name").ljust(15), strPresent_of_depositAddress_from(eachAsset)))
+
+        print("===========")
+
+    if (cmd == "send"):
+
+        all_asset = mixinApiNewUserInstance.getMyAssets()
+        print("select an asset to send" + "===========")
+
+        none_zero_asset = []
+        for eachAsset in all_asset:
+            if (float(eachAsset.get("balance"))) > 0:
+                none_zero_asset.append(eachAsset)
+        i = 0
+        for eachNoneZero in none_zero_asset:
+            print("index %d, %s: %s" %(i, eachNoneZero.get("name").ljust(15), eachNoneZero.get("balance")))
+            i = i + 1
+        if (i > 0 and i <= len(none_zero_asset)):
+            selected_index = int(input("index number:"))
+            if selected_index < len(none_zero_asset):
+                selected_asset = none_zero_asset[selected_index]
+                print("send to mixin network uuid: 0")
+                print("send to asset address     : 1")
+                address_type = input("your selection:")
+                if (address_type == "0"):
+                    destination_uuid = input("destination uuid:")
+                    amount_tosend     = input("quantity(%s remain):"%selected_asset.get("balance"))
+                    memo_input = input("memo:")
+                    asset_pin_input = input("pin code:")
+                    this_uuid = str(uuid.uuid1())
+                    user_confirm = input("Type YES to confirm: send %s %s to %s , memo:%s, trace id: %s:"%(amount_tosend, selected_asset.get("name"), destination_uuid, memo_input, this_uuid))
+                    if (user_confirm == "YES"):
+                        transfer_result = mixinApiNewUserInstance.transferTo(destination_uuid, selected_asset.get("asset_id"), amount_tosend, memo_input, this_uuid, asset_pin_input)
+                        snapShotID = transfer_result.get("data").get("snapshot_id")
+                        print("your transaction is confirmed by Mixin Network with snapshot: %s, you can verify on browser:%s"%(snapShotID, "https://mixin.one/snapshots/" + snapShotID))
+        else:
+            print("no available asset to send")
 
     if ( cmd == 'searchsnapshots'):
         timestamp = input("input timestamp, history after the time will be searched:")
-        limit = input("input max record you want to search:")
-        snapshots_result_of_account = mixinApiNewUserInstance.account_snapshots_after(timestamp, asset_id = "", limit=int(limit))
+        snapshots_result_of_account = mixinApiNewUserInstance.account_snapshots_after(timestamp, asset_id = "", limit = 500)
         USDT_Snapshots_result_of_account = mixinApiNewUserInstance.find_mysnapshot_in(snapshots_result_of_account)
         for singleSnapShot in USDT_Snapshots_result_of_account:
             print(singleSnapShot)
