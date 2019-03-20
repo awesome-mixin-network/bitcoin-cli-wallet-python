@@ -177,33 +177,53 @@ def withdraw_asset(withdraw_asset_id, withdraw_asset_name):
 mixinApiBotInstance = MIXIN_API(mixin_config)
 
 PromptMsg  = "Read first user from local file new_users.csv        : loaduser\n"
-PromptMsg += "Read account asset non-zero balance                  : balance\n"
-PromptMsg += "Read single asset balance                            : singlebalance\n"
-PromptMsg += "Read transaction of my account                       : searchsnapshots\n"
-PromptMsg += "Read one snapshots info of account                   : snapshot\n"
-PromptMsg += "Read one asset snapshots                             : assetsnapshots\n"
-PromptMsg += "Pay USDT to ExinCore to buy BTC                      : buybtc\n"
-PromptMsg += "Create wallet and update PIN                         : create\n"
-PromptMsg += "transafer all asset to my account in Mixin Messenger : allmoney\n"
-PromptMsg += "List account withdraw address                        : listaddress\n"
-PromptMsg += "Add new withdraw address for Bitcoin                 : addbitcoinaddress\n"
-PromptMsg += "Add new withdraw address for USDT                    : addusdtaddress\n"
-PromptMsg += "Remove withdraw address for Bitcoin                  : removebtcaddress\n"
-PromptMsg += "Remove withdraw address for Bitcoin                  : removeusdtaddress\n"
-PromptMsg += "Withdraw BTC                                         : withdrawbtc\n"
-PromptMsg += "Withdraw USDT                                        : withdrawusdt\n"
-PromptMsg += "verify pin                                           : verifypin\n"
-PromptMsg += "updatepin                                            : updatepin\n"
 PromptMsg += "Exit                                                 : q\n"
+loadedPromptMsg  = "Read account asset non-zero balance                  : balance\n"
+loadedPromptMsg += "Read single asset balance                            : singlebalance\n"
+loadedPromptMsg += "Read transaction of my account                       : searchsnapshots\n"
+loadedPromptMsg += "Read one snapshots info of account                   : snapshot\n"
+loadedPromptMsg += "Read one asset snapshots                             : assetsnapshots\n"
+loadedPromptMsg += "Pay USDT to ExinCore to buy BTC                      : buybtc\n"
+loadedPromptMsg += "Create wallet and update PIN                         : create\n"
+loadedPromptMsg += "transafer all asset to my account in Mixin Messenger : allmoney\n"
+loadedPromptMsg += "List account withdraw address                        : listaddress\n"
+loadedPromptMsg += "Add new withdraw address for Bitcoin                 : addbitcoinaddress\n"
+loadedPromptMsg += "Add new withdraw address for USDT                    : addusdtaddress\n"
+loadedPromptMsg += "Remove withdraw address for Bitcoin                  : removebtcaddress\n"
+loadedPromptMsg += "Remove withdraw address for Bitcoin                  : removeusdtaddress\n"
+loadedPromptMsg += "Withdraw BTC                                         : withdrawbtc\n"
+loadedPromptMsg += "Withdraw USDT                                        : withdrawusdt\n"
+loadedPromptMsg += "verify pin                                           : verifypin\n"
+loadedPromptMsg += "updatepin                                            : updatepin\n"
+loadedPromptMsg += "switch account                                       : switch\n"
+
+global mixinApiNewUserInstance
+mixinApiNewUserInstance = None
 while ( 1 > 0 ):
+    if (mixinApiNewUserInstance != None):
+        cmd = input(loadedPromptMsg)
+    else:
     cmd = input(PromptMsg)
     if (cmd == 'q' ):
         exit()
+    if (cmd == 'switch'):
+
+        mixinApiNewUserInstance = None
     print("Run...")
     if ( cmd == 'loaduser'):
         with open('new_users.csv', newline='') as csvfile:
             reader  = csv.reader(csvfile)
-            row = next(reader)
+
+            user_accounts = []
+            i = 0
+            for row in reader:
+                user_accounts.append(row)
+                print("%d: user_id-> %s"%(i, row[-2]))
+                i = i + 1
+
+            user_index = input(("%d account in your file, load which account: "%len(user_accounts)))
+ 
+            row = user_accounts[int(user_index)]
             pin         = row.pop()
             userid      = row.pop()
             session_id  = row.pop()
