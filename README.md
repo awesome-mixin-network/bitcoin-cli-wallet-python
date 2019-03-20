@@ -113,28 +113,3 @@ Run the code
 ```bash
 python3 Bitcoin_Wallet_Mixin.py
 ```
-
-
-The following is console output
-```bash
-(bitcoin-cli-wallet-python) ➜  bitcoin-cli-wallet-python git:(master) ✗ python Bitcoin_Wallet_Mixin.py 
-Read first user from local file new_users.csv        : loaduser
-Read account asset balance                           : balance
-Read Bitcoin                                         : btcbalance
-Read USDT                                            : usdtbalance
-Read transaction of my account                       : searchsnapshots
-Read one snapshots info of account                   : snapshot
-Pay USDT to ExinCore to buy BTC                      : buybtc
-Create wallet and update PIN                         : create
-transafer all asset to my account in Mixin Messenger : allmoney
-List account withdraw address                        : listaddress
-Add new withdraw address for Bitcoin                 : addbitcoinaddress
-Add new withdraw address for USDT                    : addusdtaddress
-Remove withdraw address for Bitcoin                  : removebtcaddress
-Remove withdraw address for Bitcoin                  : removeusdtaddress
-Withdraw BTC                                         : withdrawbtc
-Withdraw USDT                                        : withdrawusdt
-verify pin                                           : verifypin
-updatepin                                            : updatepin
-Exit                                                 : q
-```
