@@ -204,13 +204,13 @@ mixinApiBotInstance = MIXIN_API(mixin_config)
 
 padding = 70
 PromptMsg  = "Read first user from local file new_users.csv        : loaduser\n"
+PromptMsg += "Create account and append to new_users.csv           : create\n"
 PromptMsg += "Exit                                                 : q\n"
 loadedPromptMsg  = "Read account asset non-zero balance".ljust(padding) + ": balance\n"
 loadedPromptMsg += "deposit asset ".ljust(padding) + ": deposit\n"
 loadedPromptMsg += "send asset ".ljust(padding) + ": send\n"
 loadedPromptMsg += "Read transaction of my account".ljust(padding) + ": searchsnapshots\n"
 loadedPromptMsg += "Pay USDT to ExinCore to buy BTC".ljust(padding) + ": buybtc\n"
-loadedPromptMsg += "transafer all asset to my account in Mixin Messenger".ljust(padding) + ": allmoney\n"
 loadedPromptMsg += "List account withdraw address".ljust(padding) + ": listaddress\n"
 loadedPromptMsg += "Add new withdraw address for Bitcoin".ljust(padding) + ": addbitcoinaddress\n"
 loadedPromptMsg += "Add new withdraw address for USDT".ljust(padding) + ": addusdtaddress\n"
@@ -501,18 +501,20 @@ while ( 1 > 0 ):
                     created_at = transfer_result.get("data").get("created_at")
                     print(created_at + ":Pay BTC to Master ID with trace id:" + this_uuid + ", you can verify the result on https://mixin.one/snapshots/" + snapShotID)
     if ( cmd == 'listaddress' ):
-        BTC_withdraw_addresses_result = mixinApiNewUserInstance.withdrawals_address(BTC_ASSET_ID)
-        BTC_withdraw_addresses = BTC_withdraw_addresses_result.get("data")
-        print("BTC address is:=======")
-        for eachAddress in BTC_withdraw_addresses:
-            btcAddress = strPresent_of_btc_withdrawaddress(eachAddress)
-            print(btcAddress)
-        print("USDT address is:=======")
-        USDT_withdraw_addresses_result = mixinApiNewUserInstance.withdrawals_address(USDT_ASSET_ID)
-        USDT_withdraw_addresses = USDT_withdraw_addresses_result.get("data")
-        for eachAddress in USDT_withdraw_addresses:
-            usdtAddress = strPresent_of_btc_withdrawaddress(eachAddress)
-            print(usdtAddress)
+        all_asset = mixinApiNewUserInstance.getMyAssets()
+        asset_id_groups_in_myassets = []
+        for eachAsset in all_asset:
+            asset_id_groups_in_myassets.append(eachAsset.get("asset_id"))
+        print("Your asset balance is\n===========")
+
+        i = 0
+        for eachAsset in all_asset:
+            print("%s: %d" %(eachAsset.get("name").ljust(15), i))
+            i += 1
+
+        user_choice = int(input("which asset:"))
+        print(all_asset[user_choice])
+
 
     if ( cmd == 'addbitcoinaddress' ):
         BTC_depost_address = input("Bitcoin withdraw address:")
