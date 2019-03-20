@@ -93,7 +93,7 @@ def strPresent_of_depositAddress_from(AssetData):
         address_public = AssetData.get("public_key")
         return "%s"%address_public
 
-def strPresent_of_asset_withdrawaddress(thisAddress, asset_id):
+def strPresent_of_asset_withdrawaddress(thisAddress, asset_id, prefix = ""):
     address_id = thisAddress.get("address_id")
     address_pubkey = thisAddress.get("public_key")
     address_label = thisAddress.get("label")
@@ -101,14 +101,18 @@ def strPresent_of_asset_withdrawaddress(thisAddress, asset_id):
     address_accounttag = thisAddress.get("account_tag")
     address_fee = thisAddress.get("fee")
     address_dust = thisAddress.get("dust")
-    Address = "tag: %s,  id: %s, address: %s, fee: %s, dust: %s"%(address_label, address_id, address_pubkey, address_fee, address_dust)
+    Address  = prefix + "tag     : %s\n"%address_label
+    Address += prefix + "id      : %s\n"%address_id
+    Address += prefix + "Address : %s\n"%address_pubkey
+    Address += prefix + "fee     : %s\n"%address_fee
+    Address += prefix + "dust    : %s\n"%address_dust
     return Address
  
-def strPresent_of_btc_withdrawaddress(thisAddress):
-    return strPresent_of_asset_withdrawaddress(thisAddress, BTC_ASSET_ID)
+def strPresent_of_btc_withdrawaddress(thisAddress, prefix= ""):
+    return strPresent_of_asset_withdrawaddress(thisAddress, BTC_ASSET_ID, prefix)
     
-def strPresent_of_usdt_withdrawaddress(thisAddress):
-    return strPresent_of_asset_withdrawaddress(thisAddress, USDT_ASSET_ID)
+def strPresent_of_usdt_withdrawaddress(thisAddress, prefix = ""):
+    return strPresent_of_asset_withdrawaddress(thisAddress, USDT_ASSET_ID, prefix)
 
 def remove_withdraw_address_of(mixinApiUserInstance, withdraw_asset_id, withdraw_asset_name):
     USDT_withdraw_addresses_result = mixinApiUserInstance.withdrawals_address(withdraw_asset_id)
@@ -124,7 +128,7 @@ def remove_withdraw_address_of(mixinApiUserInstance, withdraw_asset_id, withdraw
     if (int(userselect) < i):
         eachAddress = USDT_withdraw_addresses[int(userselect)]
         address_id = eachAddress.get("address_id")
-        Address = "index %d: %s"%(int(userselect), strPresent_of_asset_withdrawaddress(eachAddress, withdraw_asset_id))
+        Address = "Index %d: %s"%(int(userselect), strPresent_of_asset_withdrawaddress(eachAddress, withdraw_asset_id))
         confirm = input("Type YES to remove " + Address + "!!:")
         if (confirm == "YES"):
             input_pin = input("pin:")
@@ -512,8 +516,32 @@ while ( 1 > 0 ):
             print("%s: %d" %(eachAsset.get("name").ljust(15), i))
             i += 1
 
+
         user_choice = int(input("which asset:"))
-        print(all_asset[user_choice])
+        if (user_choice < len(all_asset)):
+            selected_asset = all_asset[user_choice]
+            print(selected_asset)
+            withdraw_addresses_result = mixinApiNewUserInstance.withdrawals_address(selected_asset.get("asset_id"))
+            withdraw_addresses = withdraw_addresses_result.get("data")
+            print("%s: Total %d withdraw address "%(selected_asset.get("name"), len(withdraw_addresses)))
+            i = 0
+            for eachAddress in withdraw_addresses:
+                btcAddress = strPresent_of_btc_withdrawaddress(eachAddress, " " * 8).ljust(100)
+                print("%s: %d\n%s"%("Remove".ljust(40, '-') ,i, btcAddress))
+                i = i + 1
+            print("%s: %d"%("Add new address".ljust(40, '-'), i))
+            user_choice = int(input("your choice:"))
+            if (user_choice == (len(withdraw_addresses))):
+                print("add new address")
+            elif (user_choice < len(withdraw_addresses)):
+                tobe_delete_address = withdraw_addresses[user_choice]
+                print("Following address will be removed\n%s"%strPresent_of_btc_withdrawaddress(tobe_delete_address, " " * 8))
+                remove_address_pin = getpass.getpass("asset pin code:")
+                remove_address_confirm = input("Type YES and press enter key to confirm:")
+                if (remove_address_confirm == "YES"):
+                    remove_address_result = mixinApiNewUserInstance.delAddress(tobe_delete_address.get("address_id"), remove_address_pin)
+                    print(remove_address_result)
+
 
 
     if ( cmd == 'addbitcoinaddress' ):
