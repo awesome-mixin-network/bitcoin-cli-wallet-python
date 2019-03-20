@@ -93,7 +93,7 @@ def strPresent_of_depositAddress_from(AssetData):
         address_public = AssetData.get("public_key")
         return "%s"%address_public
 
-def strPresent_of_asset_withdrawaddress(thisAddress, asset_id, prefix = ""):
+def strPresent_of_asset_withdrawaddress(thisAddress, asset_id, prefix = " "* 4):
     address_id = thisAddress.get("address_id")
     address_pubkey = thisAddress.get("public_key")
     address_label = thisAddress.get("label")
@@ -101,17 +101,27 @@ def strPresent_of_asset_withdrawaddress(thisAddress, asset_id, prefix = ""):
     address_accounttag = thisAddress.get("account_tag")
     address_fee = thisAddress.get("fee")
     address_dust = thisAddress.get("dust")
-    Address  = prefix + "tag     : %s\n"%address_label
-    Address += prefix + "id      : %s\n"%address_id
-    Address += prefix + "Address : %s\n"%address_pubkey
-    Address += prefix + "fee     : %s\n"%address_fee
-    Address += prefix + "dust    : %s\n"%address_dust
+    Address  = ""
+    if address_label != "":
+        Address += prefix + "tag          : %s\n"%address_label
+    Address += prefix + "id           : %s\n"%address_id
+
+    if address_pubkey!= "":
+        Address += prefix + "Address      : %s\n"%address_pubkey
+
+    if address_accountname!= "":
+        Address += prefix + "Account name : %s\n"%address_accountname
+
+    if address_accounttag!= "":
+        Address += prefix + "Account memo : %s\n"%address_accounttag
+    Address += prefix + "fee          : %s\n"%address_fee
+    Address += prefix + "dust         : %s\n"%address_dust
     return Address
  
-def strPresent_of_btc_withdrawaddress(thisAddress, prefix= ""):
+def strPresent_of_btc_withdrawaddress(thisAddress, prefix= " " * 8):
     return strPresent_of_asset_withdrawaddress(thisAddress, BTC_ASSET_ID, prefix)
     
-def strPresent_of_usdt_withdrawaddress(thisAddress, prefix = ""):
+def strPresent_of_usdt_withdrawaddress(thisAddress, prefix = " " * 8):
     return strPresent_of_asset_withdrawaddress(thisAddress, USDT_ASSET_ID, prefix)
 
 def remove_withdraw_address_of(mixinApiUserInstance, withdraw_asset_id, withdraw_asset_name):
@@ -216,10 +226,6 @@ loadedPromptMsg += "send asset ".ljust(padding) + ": send\n"
 loadedPromptMsg += "Read transaction of my account".ljust(padding) + ": searchsnapshots\n"
 loadedPromptMsg += "Pay USDT to ExinCore to buy BTC".ljust(padding) + ": buybtc\n"
 loadedPromptMsg += "List account withdraw address".ljust(padding) + ": manageassets\n"
-loadedPromptMsg += "Add new withdraw address for Bitcoin".ljust(padding) + ": addbitcoinaddress\n"
-loadedPromptMsg += "Add new withdraw address for USDT".ljust(padding) + ": addusdtaddress\n"
-loadedPromptMsg += "Remove withdraw address for Bitcoin".ljust(padding) + ": removebtcaddress\n"
-loadedPromptMsg += "Remove withdraw address for Bitcoin".ljust(padding) + ": removeusdtaddress\n"
 loadedPromptMsg += "verify pin".ljust(padding) + ": verifypin\n"
 loadedPromptMsg += "updatepin".ljust(padding) + ": updatepin\n"
 loadedPromptMsg += "switch account".ljust(padding) + ": switch\n"
@@ -300,7 +306,7 @@ while ( 1 > 0 ):
                 none_zero_asset.append(eachAsset)
         i = 0
         for eachNoneZero in none_zero_asset:
-            print("index %d, %s: %s" %(i, eachNoneZero.get("name").ljust(15), eachNoneZero.get("balance")))
+            print("Send %s: %d" %(eachNoneZero.get("name").ljust(15), i))
             i = i + 1
         if (i > 0 and i <= len(none_zero_asset)):
             selected_index = int(input("index number:"))
@@ -323,47 +329,28 @@ while ( 1 > 0 ):
                 if (address_type == "1"):
                     withdraw_addresses_result = mixinApiNewUserInstance.withdrawals_address(selected_asset.get("asset_id"))
                     withdraw_addresses = withdraw_addresses_result.get("data")
-                    print("BTC address is:=======")
                     i = 0
                     for eachAddress in withdraw_addresses:
                         btcAddress = strPresent_of_btc_withdrawaddress(eachAddress)
-                        print("%d, %s"%(i, btcAddress))
+                        print("%s:\n%s"%(str(i).ljust(10, '-'), btcAddress))
                         i = i + 1
-                    print("%d, add new address"%i)
                     user_choice = int(input("your choice:"))
 
                     if (user_choice < len(withdraw_addresses)):
                         selected_withdraw_address = withdraw_addresses[user_choice]
-                        print(selected_withdraw_address)
                         withdraw_amount = input("amount to withdraw:")
                         address_id = selected_withdraw_address.get("address_id")
                         address_pubkey = selected_withdraw_address.get("public_key")
                         withdraw_asset_id = selected_withdraw_address.get("asset_id")
 
-                        address_selected = "index %d: %s"%(user_choice, strPresent_of_asset_withdrawaddress(selected_withdraw_address, withdraw_asset_id))
-                        confirm = input("Type YES and press enter key to withdraw " + withdraw_amount + selected_asset.get("name") + " to " + address_selected + "!!:")
+                        address_selected = "%s"%(strPresent_of_asset_withdrawaddress(selected_withdraw_address, withdraw_asset_id))
+                        confirm = input("Type YES and press enter key to withdraw " + withdraw_amount + " " + selected_asset.get("name") + " to \n" + address_selected + ":")
                         if (confirm == "YES"):
                             this_uuid = str(uuid.uuid1())
                             asset_pin = getpass.getpass("pin:")
                             asset_withdraw_result = mixinApiNewUserInstance.withdrawals(address_id, withdraw_amount, "withdraw2"+address_pubkey, this_uuid, asset_pin)
                             if (asset_withdraw_result != None):
                                 print(asset_withdraw_result)
-
-                    elif (user_choice == len(withdraw_addresses)):
-                        if (selected_asset.get("chain_id") != EOS_ASSET_ID):
-                            deposit_address = input("address:")
-                            tag_content = input("write a tag:")
-                            Confirm = input("address %s with tag %s, Type YES and press enter key to confirm"%(deposit_address, tag_content))
-                            if (Confirm == "YES"):
-                                input_pin = getpass.getpass("pin:")
-                                add_withdraw_addresses_result = mixinApiNewUserInstance.createAddress(selected_asset.get("asset_id"), deposit_address, tag_content, asset_pin = input_pin)
-                                address_id = add_withdraw_addresses_result.get("data").get("address_id")
-                                print("the address :" + deposit_address + " is added to your account with id:" + address_id)
-
-                                result = withdraw_asset(selected_asset.get("asset_id"), selected_asset.get("name"), mixinApiNewUserInstance)
-                                if (result != None):
-                                    print(result)
-
 
         else:
             print("no available asset to send")
@@ -551,7 +538,7 @@ while ( 1 > 0 ):
                         input_pin = getpass.getpass("pin:")
                         add_withdraw_addresses_result = mixinApiNewUserInstance.createAddress(selected_asset.get("asset_id"), "", tag_content, input_pin, deposit_account, deposit_memo)
                         address_id = add_withdraw_addresses_result.get("data").get("address_id")
-                        print("the address :" + deposit_address + " is added to your account with id:" + address_id)
+                        print("the address  is added to your account with id:" + address_id)
 
             elif (user_choice < len(withdraw_addresses)):
                 tobe_delete_address = withdraw_addresses[user_choice]
@@ -563,44 +550,6 @@ while ( 1 > 0 ):
                     print(remove_address_result)
 
 
-
-    if ( cmd == 'addbitcoinaddress' ):
-        BTC_depost_address = input("Bitcoin withdraw address:")
-        Confirm = input(BTC_depost_address + ", Type YES and press enter key to confirm:")
-        if (Confirm == "YES"):
-            tag_content = input("write a tag:")
-            input_pin = getpass.getpass("pin:")
-            add_BTC_withdraw_addresses_result = mixinApiNewUserInstance.createAddress(BTC_ASSET_ID, BTC_depost_address, tag_content, asset_pin = input_pin)
-            address_id = add_BTC_withdraw_addresses_result.get("data").get("address_id")
-            print("the address :" + BTC_depost_address + " is added to your account with id:" + address_id)
-    if ( cmd == 'addusdtaddress' ):
-        USDT_depost_address = input("usdt withdraw address:")
-        Confirm = input(USDT_depost_address + ", Type YES and press enter key to confirm:")
-        if (Confirm == "YES"):
-            tag_content = input("tag:")
-            input_pin = getpass.getpass("pin:")
-
-            USDT_withdraw_addresses = mixinApiNewUserInstance.createAddress(USDT_ASSET_ID, USDT_depost_address, tag_content,  asset_pin = input_pin)
-            address_id = USDT_withdraw_addresses.get("data").get("address_id")
-            print("the address :" + BTC_depost_address + " is added to your account with id:" + address_id)
-
-    if ( cmd == 'removebtcaddress' ):
-        remove_withdraw_address_of(mixinApiNewUserInstance, BTC_ASSET_ID, "BTC")
-
-    if ( cmd == "removeusdtaddress"):
-        remove_withdraw_address_of(mixinApiNewUserInstance, USDT_ASSET_ID, "USDT")
-
-    if ( cmd == 'withdrawbtc' ):
-        result = withdraw_asset(BTC_ASSET_ID, "BTC", mixinApiNewUserInstance)
-        if (result != None):
-            print(result)
-
-    if ( cmd == 'withdrawusdt' ):
-        withdraw_asset_id = USDT_ASSET_ID
-        withdraw_asset_name = "usdt"
-        result = withdraw_asset(USDT_ASSET_ID, "USDT", mixinApiNewUserInstance)
-        if (result != None):
-            print(result)
 
     if ( cmd == 'verifypin' ):
         input_pin = getpass.getpass("input your account pin:")
