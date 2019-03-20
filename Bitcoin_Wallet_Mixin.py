@@ -146,10 +146,10 @@ def explainData(inputJsonData):
             return result
 
 
-def withdraw_asset(withdraw_asset_id, withdraw_asset_name):
-    this_asset_balance = asset_balance(mixinApiNewUserInstance, withdraw_asset_id)
+def withdraw_asset(withdraw_asset_id, withdraw_asset_name, mixinAccountInstance):
+    this_asset_balance = asset_balance(mixinAccountInstance, withdraw_asset_id)
     withdraw_amount = input("%s %s in your account, how many %s you want to withdraw: "%(withdraw_asset_name, this_asset_balance, withdraw_asset_name))
-    withdraw_addresses_result = mixinApiNewUserInstance.withdrawals_address(withdraw_asset_id)
+    withdraw_addresses_result = mixinAccountInstance.withdrawals_address(withdraw_asset_id)
     withdraw_addresses = withdraw_addresses_result.get("data")
     i = 0
     print("current " + withdraw_asset_name +" address:=======")
@@ -168,7 +168,7 @@ def withdraw_asset(withdraw_asset_id, withdraw_asset_name):
         if (confirm == "YES"):
             this_uuid = str(uuid.uuid1())
             asset_pin = getpass.getpass("pin:")
-            asset_withdraw_result = mixinApiNewUserInstance.withdrawals(address_id, withdraw_amount, "withdraw2"+address_pubkey, this_uuid, asset_pin)
+            asset_withdraw_result = mixinAccountInstance.withdrawals(address_id, withdraw_amount, "withdraw2"+address_pubkey, this_uuid, asset_pin)
             return asset_withdraw_result
     return None
 
@@ -203,7 +203,7 @@ while ( 1 > 0 ):
     if (mixinApiNewUserInstance != None):
         cmd = input(loadedPromptMsg)
     else:
-    cmd = input(PromptMsg)
+        cmd = input(PromptMsg)
     if (cmd == 'q' ):
         exit()
     if (cmd == 'switch'):
@@ -465,14 +465,14 @@ while ( 1 > 0 ):
         remove_withdraw_address_of(mixinApiNewUserInstance, USDT_ASSET_ID, "USDT")
 
     if ( cmd == 'withdrawbtc' ):
-        result = withdraw_asset(BTC_ASSET_ID, "BTC")
+        result = withdraw_asset(BTC_ASSET_ID, "BTC", mixinApiNewUserInstance)
         if (result != None):
             print(result)
 
     if ( cmd == 'withdrawusdt' ):
         withdraw_asset_id = USDT_ASSET_ID
         withdraw_asset_name = "usdt"
-        result = withdraw_asset(USDT_ASSET_ID, "USDT")
+        result = withdraw_asset(USDT_ASSET_ID, "USDT", mixinApiNewUserInstance)
         if (result != None):
             print(result)
 
