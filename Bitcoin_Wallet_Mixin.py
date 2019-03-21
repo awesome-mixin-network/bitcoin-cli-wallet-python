@@ -225,7 +225,7 @@ loadedPromptMsg  = "Read account asset non-zero balance".ljust(padding) + ": bal
 loadedPromptMsg += "deposit asset ".ljust(padding) + ": deposit\n"
 loadedPromptMsg += "send asset ".ljust(padding) + ": send\n"
 loadedPromptMsg += "Read transaction of my account".ljust(padding) + ": searchsnapshots\n"
-loadedPromptMsg += "Pay USDT to ExinCore to buy BTC".ljust(padding) + ": buybtc\n"
+loadedPromptMsg += "Pay USDT to ExinCore to buy BTC".ljust(padding) + ": tradebtc\n"
 loadedPromptMsg += "List account withdraw address".ljust(padding) + ": manageassets\n"
 loadedPromptMsg += "verify pin".ljust(padding) + ": verifypin\n"
 loadedPromptMsg += "updatepin".ljust(padding) + ": updatepin\n"
@@ -325,8 +325,9 @@ while ( 1 > 0 ):
                     user_confirm = input("Type YES and press enter key to confirm: send %s %s to %s , memo:%s, trace id: %s:"%(amount_tosend, selected_asset.get("name"), destination_uuid, memo_input, this_uuid))
                     if (user_confirm == "YES"):
                         transfer_result = mixinApiNewUserInstance.transferTo(destination_uuid, selected_asset.get("asset_id"), amount_tosend, memo_input, this_uuid, asset_pin_input)
-                        snapShotID = transfer_result.get("data").get("snapshot_id")
-                        print("your transaction is confirmed by Mixin Network with snapshot: %s, you can verify on browser:%s"%(snapShotID, "https://mixin.one/snapshots/" + snapShotID))
+                        if(transfer_result != False):
+                            snapShotID = transfer_result.get("data").get("snapshot_id")
+                            print("your transaction is confirmed by Mixin Network with snapshot: %s, you can verify on browser:%s"%(snapShotID, "https://mixin.one/snapshots/" + snapShotID))
                 if (address_type == "1"):
                     withdraw_addresses_result = mixinApiNewUserInstance.withdrawals_address(selected_asset.get("asset_id"))
                     withdraw_addresses = withdraw_addresses_result.get("data")
@@ -418,11 +419,20 @@ while ( 1 > 0 ):
                 except :
                     print(created_at_snap +": You receive: " + str(amount_snap) + " " + asset_snap + " from " + opponent_id_snapshot + " with memo:" + memo_at_snap)
 
-    if ( cmd == 'buybtc' ):
+    if ( cmd == 'tradebtc' ):
         # Pack memo
-        print("fetching latest price")
-        result_fetchPrice = requests.get('https://exinone.com/exincore/markets', params={'base_asset':USDT_ASSET_ID, 'exchange_asset':BTC_ASSET_ID})
+        buy_or_sell = input("buy or sell btc:")
+        if buy_or_sell == "sell":
+            print("fetching latest price")
+            target_asset_id = USDT_ASSET_ID
+            source_asset_id = BTC_ASSET_ID
+        if buy_or_sell == "buy":
+            target_asset_id = BTC_ASSET_ID
+            source_asset_id = USDT_ASSET_ID
+
+        result_fetchPrice = requests.get('https://exinone.com/exincore/markets', params={'base_asset':source_asset_id, 'exchange_asset':target_asset_id})
         exin_response = result_fetchPrice.json()
+        print(exin_response)
         if (exin_response.get("code") == 0):
             datalist_in_response = exin_response.get("data")
             for eachData in datalist_in_response:
@@ -436,19 +446,20 @@ while ( 1 > 0 ):
                     supported_by_exchanges += eachExchange
                     supported_by_exchanges += " "
                 print("%s %s / %s, amount range( %s - %s), exchange: %s"%(price_base_asset, eachData.get("base_asset_symbol"), eachData.get("exchange_asset_symbol"), minimum_pay_base_asset, maximum_pay_base_asset, supported_by_exchanges))
-            memo_for_exin = gen_memo_ExinBuy(BTC_ASSET_ID)
+            memo_for_exin = gen_memo_ExinBuy(source_asset_id)
 
-            btcInfo = mixinApiNewUserInstance.getAsset(USDT_ASSET_ID)
+            btcInfo = mixinApiNewUserInstance.getAsset(source_asset_id)
             remainUSDT = btcInfo.get("data").get("balance")
-            amount_to_pay =  input("input USDT you want to pay:")
+            amount_to_pay =  input("how much you want to pay, %s in your balance:"%remainUSDT)
             this_uuid = str(uuid.uuid1())
-            confirm_payUSDT = input("Pay " + amount_to_pay + " " + base_sym + " to buy " + str(float(amount_to_pay)/float(price_base_asset)) + " " + target_sym + " on ExinCore" + ", Type YES and press enter key to confirm")
-            if ( confirm_payUSDT == "YES" ):
+            confirm_pay = input("Pay " + amount_to_pay + " " + base_sym + " to buy " + str(float(amount_to_pay)/float(price_base_asset)) + " " + target_sym + " on ExinCore" + ", Type YES and press enter key to confirm")
+            if ( confirm_pay == "YES" ):
                 input_pin = getpass.getpass("pin code:")
 
-                transfer_result = mixinApiNewUserInstance.transferTo(EXINCORE_UUID, USDT_ASSET_ID, remainUSDT, memo_for_exin, this_uuid, input_pin)
-                snapShotID = transfer_result.get("data").get("snapshot_id")
-                print("Pay USDT to ExinCore to buy BTC by uuid:" + this_uuid + ", you can verify the result on https://mixin.one/snapshots/" + snapShotID)
+                transfer_result = mixinApiNewUserInstance.transferTo(EXINCORE_UUID, source_asset_id, amount_to_pay, memo_for_exin, this_uuid, input_pin)
+                if(transfer_result != False):
+                    snapShotID = transfer_result.get("data").get("snapshot_id")
+                    print("Pay USDT to ExinCore to buy BTC by uuid:" + this_uuid + ", you can verify the result on https://mixin.one/snapshots/" + snapShotID)
     if ( cmd == 'create' ):
         key = RSA.generate(1024)
         pubkey = key.publickey()
@@ -504,9 +515,10 @@ while ( 1 > 0 ):
                 confirm_pay= input("type YES to pay " + eachAssetInfo.get("balance")+ " to MASTER:")
                 if ( confirm_pay== "YES" ):
                     transfer_result = mixinApiNewUserInstance.transferTo(MASTER_UUID, eachAssetInfo.get("asset_id"), eachAssetInfo.get("balance"), "", this_uuid, my_pin)
-                    snapShotID = transfer_result.get("data").get("snapshot_id")
-                    created_at = transfer_result.get("data").get("created_at")
-                    print(created_at + ":Pay BTC to Master ID with trace id:" + this_uuid + ", you can verify the result on https://mixin.one/snapshots/" + snapShotID)
+                    if(transfer_result != False):
+                        snapShotID = transfer_result.get("data").get("snapshot_id")
+                        created_at = transfer_result.get("data").get("created_at")
+                        print(created_at + ":Pay BTC to Master ID with trace id:" + this_uuid + ", you can verify the result on https://mixin.one/snapshots/" + snapShotID)
     if ( cmd == 'manageassets' ):
         all_asset = mixinApiNewUserInstance.getMyAssets()
         asset_id_groups_in_myassets = []

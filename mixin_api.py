@@ -271,8 +271,9 @@ class MIXIN_API:
         if (r.status_code == 500):
             print("path: %s, body:%s"%(path, body_in_json))
             return False
-        print("status code is:%d"%r.status_code)
-        return r.json()
+        print("status code is:%d, body is %s"%(r.status_code, body_in_json))
+        print(r.json())
+        return False
 
 
     """
