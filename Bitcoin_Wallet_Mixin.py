@@ -293,7 +293,12 @@ while ( 1 > 0 ):
 
         for eachAsset in all_asset:
             print("%s: %s" %(eachAsset.get("name").ljust(15), strPresent_of_depositAddress_from(eachAsset)))
-
+            asset_id_groups_in_myassets.append(eachAsset.get("asset_id"))
+        for eachAssetID in MIXIN_DEFAULT_CHAIN_GROUP:
+            if ( not (eachAssetID in asset_id_groups_in_myassets)):
+                print(eachAssetID)
+                eachAsset = mixinApiNewUserInstance.getAsset(eachAssetID).get("data")
+                print("%s: %s" %(eachAsset.get("name").ljust(15), strPresent_of_depositAddress_from(eachAsset)))
         print("===========")
 
     if (cmd == "send"):
@@ -448,18 +453,18 @@ while ( 1 > 0 ):
                 print("%s %s / %s, amount range( %s - %s), exchange: %s"%(price_base_asset, eachData.get("base_asset_symbol"), eachData.get("exchange_asset_symbol"), minimum_pay_base_asset, maximum_pay_base_asset, supported_by_exchanges))
             memo_for_exin = gen_memo_ExinBuy(source_asset_id)
 
-            btcInfo = mixinApiNewUserInstance.getAsset(source_asset_id)
-            remainUSDT = btcInfo.get("data").get("balance")
-            amount_to_pay =  input("how much you want to pay, %s in your balance:"%remainUSDT)
+            balance_base_asset = mixinApiNewUserInstance.getAsset(source_asset_id).get("data").get("balance")
+            amount_to_pay =  input("how much you want to pay, %s in your balance:"%balance_base_asset)
             this_uuid = str(uuid.uuid1())
-            confirm_pay = input("Pay " + amount_to_pay + " " + base_sym + " to buy " + str(float(amount_to_pay)/float(price_base_asset)) + " " + target_sym + " on ExinCore" + ", Type YES and press enter key to confirm")
+            estimated_target_amount = str(float(amount_to_pay)/float(price_base_asset))
+            confirm_pay = input("Pay " + amount_to_pay + " " + base_sym + " to buy " + estimated_target_amount + " " + target_sym + " on ExinCore" + ", Type YES and press enter key to confirm")
             if ( confirm_pay == "YES" ):
                 input_pin = getpass.getpass("pin code:")
 
                 transfer_result = mixinApiNewUserInstance.transferTo(EXINCORE_UUID, source_asset_id, amount_to_pay, memo_for_exin, this_uuid, input_pin)
                 if(transfer_result != False):
                     snapShotID = transfer_result.get("data").get("snapshot_id")
-                    print("Pay USDT to ExinCore to buy BTC by uuid:" + this_uuid + ", you can verify the result on https://mixin.one/snapshots/" + snapShotID)
+                    print("Pay " + amount_to_pay + " " + base_sym + "to ExinCore to buy " + estimated_target_amount + target_sym + " by uuid:" + this_uuid + ", you can verify the result on https://mixin.one/snapshots/" + snapShotID)
     if ( cmd == 'create' ):
         key = RSA.generate(1024)
         pubkey = key.publickey()
