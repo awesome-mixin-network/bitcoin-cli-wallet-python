@@ -214,6 +214,67 @@ def withdraw_asset(withdraw_asset_id, withdraw_asset_name, mixinAccountInstance)
     return None
 
 
+def loadSnapshots(UserInstance, timestamp, asset_id = ""):
+    snapshots_result_of_account = UserInstance.account_snapshots_after(timestamp, asset_id = asset_id, limit = 500)
+    USDT_Snapshots_result_of_account = UserInstance.find_mysnapshot_in(snapshots_result_of_account)
+    for singleSnapShot in USDT_Snapshots_result_of_account:
+       amount_snap = singleSnapShot.get("amount")
+       asset_snap = singleSnapShot.get("asset").get("name")
+       created_at_snap = singleSnapShot.get("created_at")
+       memo_at_snap = singleSnapShot.get("data")
+       id_snapshot = singleSnapShot.get("snapshot_id")
+       opponent_id_snapshot = singleSnapShot.get("opponent_id")
+       if((float(amount_snap)) < 0):
+           try:
+               exin_order = umsgpack.unpackb(base64.b64decode(memo_at_snap))
+               asset_uuid_in_myorder = str(uuid.UUID(bytes = exin_order["A"]))
+               if(asset_uuid_in_myorder == BTC_ASSET_ID):
+                   print(created_at_snap + ": You pay " + amount_snap + " " + asset_snap + " to buy BTC from ExinCore")
+           except :
+               print(created_at_snap + ": You pay " + str(amount_snap) + " " + asset_snap + " to " + opponent_id_snapshot +  " with memo:" + memo_at_snap)
+
+       if((float(amount_snap)) > 0 and memo_at_snap):
+           try:
+               exin_order = umsgpack.unpackb(base64.b64decode(memo_at_snap))
+               if ("C" in exin_order):
+                   order_result = exin_order["C"]
+                   headString = created_at_snap +": status of your payment to exin is : "
+                   if(order_result == 1000):
+                       headString = headString + "Successful Exchange"
+                   if(order_result == 1001):
+                       headString = headString + "The order not found or invalid"
+                   if(order_result == 1002):
+                       headString = headString + "The request data is invalid"
+                   if(order_result == 1003):
+                       headString = headString + "The market not supported"
+                   if(order_result == 1004):
+                       headString = headString + "Failed exchange"
+                   if(order_result == 1005):
+                       headString = headString + "Partial exchange"
+                   if(order_result == 1006):
+                       headString = headString + "Insufficient pool"
+                   if(order_result == 1007):
+                       headString = headString + "Below the minimum exchange amount"
+                   if(order_result == 1008):
+                       headString = headString + "Exceeding the maximum exchange amount"
+                   if ("P" in exin_order):
+                       headString = headString + ", your order is executed at price:" +  exin_order["P"] + " USDT" +  " per " + asset_snap
+                   if ("F" in exin_order):
+                       headString = headString + ", Exin core fee is " + exin_order["F"] + " with fee asset" + str(uuid.UUID(bytes = exin_order["FA"]))
+                   if ("T" in exin_order):
+                       if (exin_order["T"] == "F"):
+                           headString = headString +", your order is refund to you because your memo is not correct"
+                       if (exin_order["T"] == "R"):
+                           headString = headString +", your order is executed successfully"
+                       if (exin_order["T"] == "E"):
+                           headString = headString +", exin failed to execute your order"
+                   if ("O" in exin_order):
+                       headString = headString +", trace id of your payment to exincore is " + str(uuid.UUID(bytes = exin_order["O"]))
+                   print(headString)
+           except :
+               print(created_at_snap +": You receive: " + str(amount_snap) + " " + asset_snap + " from " + opponent_id_snapshot + " with memo:" + memo_at_snap)
+
+
 
 mixinApiBotInstance = MIXIN_API(mixin_config)
 
@@ -275,15 +336,15 @@ while ( 1 > 0 ):
         asset_id_groups_in_myassets = []
         for eachAsset in all_asset:
             asset_id_groups_in_myassets.append(eachAsset.get("asset_id"))
-        for eachAssetID in MIXIN_DEFAULT_CHAIN_GROUP:
-            if ( not (eachAssetID in asset_id_groups_in_myassets)):
-                mixinApiNewUserInstance.getAsset(eachAssetID)
 
         print("Your asset balance is\n===========")
 
         for eachAsset in all_asset:
             print("%s: %s" %(eachAsset.get("name").ljust(15), eachAsset.get("balance")))
-
+        for eachAssetID in MIXIN_DEFAULT_CHAIN_GROUP:
+            if ( not (eachAssetID in asset_id_groups_in_myassets)):
+                eachAsset = mixinApiNewUserInstance.getAsset(eachAssetID).get("data")
+                print("%s: %s" %(eachAsset.get("name").ljust(15), eachAsset.get("balance")))
         print("===========")
     if (cmd == "deposit"):
 
@@ -296,7 +357,6 @@ while ( 1 > 0 ):
             asset_id_groups_in_myassets.append(eachAsset.get("asset_id"))
         for eachAssetID in MIXIN_DEFAULT_CHAIN_GROUP:
             if ( not (eachAssetID in asset_id_groups_in_myassets)):
-                print(eachAssetID)
                 eachAsset = mixinApiNewUserInstance.getAsset(eachAssetID).get("data")
                 print("%s: %s" %(eachAsset.get("name").ljust(15), strPresent_of_depositAddress_from(eachAsset)))
         print("===========")
@@ -451,7 +511,7 @@ while ( 1 > 0 ):
                     supported_by_exchanges += eachExchange
                     supported_by_exchanges += " "
                 print("%s %s / %s, amount range( %s - %s), exchange: %s"%(price_base_asset, eachData.get("base_asset_symbol"), eachData.get("exchange_asset_symbol"), minimum_pay_base_asset, maximum_pay_base_asset, supported_by_exchanges))
-            memo_for_exin = gen_memo_ExinBuy(source_asset_id)
+            memo_for_exin = gen_memo_ExinBuy(target_asset_id)
 
             balance_base_asset = mixinApiNewUserInstance.getAsset(source_asset_id).get("data").get("balance")
             amount_to_pay =  input("how much you want to pay, %s in your balance:"%balance_base_asset)
@@ -465,6 +525,10 @@ while ( 1 > 0 ):
                 if(transfer_result != False):
                     snapShotID = transfer_result.get("data").get("snapshot_id")
                     print("Pay " + amount_to_pay + " " + base_sym + "to ExinCore to buy " + estimated_target_amount + target_sym + " by uuid:" + this_uuid + ", you can verify the result on https://mixin.one/snapshots/" + snapShotID)
+                    checkResult = input("Type YES and press enter key to check latest snapshot:")
+                    if (checkResult == "YES"):
+                        loadSnapshots(mixinApiNewUserInstance, transfer_result.get("data").get("created_at"), "")
+                    
     if ( cmd == 'create' ):
         key = RSA.generate(1024)
         pubkey = key.publickey()
