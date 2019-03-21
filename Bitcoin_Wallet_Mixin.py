@@ -286,7 +286,9 @@ loadedPromptMsg  = "Read account asset non-zero balance".ljust(padding) + ": bal
 loadedPromptMsg += "deposit asset ".ljust(padding) + ": deposit\n"
 loadedPromptMsg += "send asset ".ljust(padding) + ": send\n"
 loadedPromptMsg += "Read transaction of my account".ljust(padding) + ": searchsnapshots\n"
-loadedPromptMsg += "Pay USDT to ExinCore to buy BTC".ljust(padding) + ": tradebtc\n"
+loadedPromptMsg += "Pay USDT to ExinCore to trade BTC".ljust(padding) + ": tradebtc\n"
+loadedPromptMsg += "Pay USDT to ExinCore to trade Zcash".ljust(padding) + ": tradezec\n"
+
 loadedPromptMsg += "List account withdraw address".ljust(padding) + ": manageassets\n"
 loadedPromptMsg += "verify pin".ljust(padding) + ": verifypin\n"
 loadedPromptMsg += "updatepin".ljust(padding) + ": updatepin\n"
@@ -484,20 +486,28 @@ while ( 1 > 0 ):
                 except :
                     print(created_at_snap +": You receive: " + str(amount_snap) + " " + asset_snap + " from " + opponent_id_snapshot + " with memo:" + memo_at_snap)
 
-    if ( cmd == 'tradebtc' ):
+    if ( cmd == 'tradebtc' or cmd == "tradezec"):
         # Pack memo
-        buy_or_sell = input("buy or sell btc:")
-        if buy_or_sell == "sell":
+        buy_or_sell = input("buy or sell:")
+
+        if buy_or_sell == "sell" and cmd == "tradebtc":
             print("fetching latest price")
             target_asset_id = USDT_ASSET_ID
             source_asset_id = BTC_ASSET_ID
-        if buy_or_sell == "buy":
+        if buy_or_sell == "buy" and cmd == "tradebtc":
             target_asset_id = BTC_ASSET_ID
             source_asset_id = USDT_ASSET_ID
+        if buy_or_sell == "sell" and cmd == "tradezec":
+            print("fetching latest price")
+            target_asset_id = USDT_ASSET_ID
+            source_asset_id = ZEC_ASSET_ID
+        if buy_or_sell == "buy" and cmd == "tradezec":
+            target_asset_id = ZEC_ASSET_ID 
+            source_asset_id = USDT_ASSET_ID
+
 
         result_fetchPrice = requests.get('https://exinone.com/exincore/markets', params={'base_asset':source_asset_id, 'exchange_asset':target_asset_id})
         exin_response = result_fetchPrice.json()
-        print(exin_response)
         if (exin_response.get("code") == 0):
             datalist_in_response = exin_response.get("data")
             for eachData in datalist_in_response:
