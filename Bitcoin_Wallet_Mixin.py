@@ -69,6 +69,27 @@ def generateMixinAPI(private_key,pin_token,session_id,user_id,pin,client_secret)
     mixin_config.pay_pin           = pin
     return  MIXIN_API(mixin_config)
 
+def str_AssetPrice(asset_price_in_exin):
+    minimum_pay_base_asset = asset_price_in_exin.get("minimum_amount")
+    maximum_pay_base_asset = asset_price_in_exin.get("maximum_amount")
+    price_base_asset       = asset_price_in_exin.get("price")
+    base_sym               = asset_price_in_exin.get("base_asset_symbol")
+    target_sym             = asset_price_in_exin.get("exchange_asset_symbol")
+    supported_by_exchanges = ""
+    for eachExchange in asset_price_in_exin.get("exchanges"):
+        supported_by_exchanges += eachExchange
+        supported_by_exchanges += " "
+    return ("%s %s %s, exchange: %s"%(price_base_asset.ljust(8), (asset_price_in_exin.get("base_asset_symbol")+"/"+asset_price_in_exin.get("exchange_asset_symbol")).ljust(15), ("min:"+minimum_pay_base_asset+" max:"+ maximum_pay_base_asset).ljust(20), supported_by_exchanges))
+
+def fetchExinPrice(source_asset_id, target_asset_id = ""):
+    result_fetchPrice = requests.get('https://exinone.com/exincore/markets', params={'base_asset':source_asset_id, "exchange_asset":target_asset_id})
+    exin_response = result_fetchPrice.json()
+
+    datalist_in_response = []
+    if (exin_response.get("code") == 0):
+        for eachData in exin_response.get("data"):
+            datalist_in_response.append(eachData)
+    return datalist_in_response
 
 def gen_memo_ExinBuy(asset_id_string):
     return base64.b64encode(umsgpack.packb({"A": uuid.UUID("{" + asset_id_string + "}").bytes})).decode("utf-8")
@@ -288,6 +309,7 @@ loadedPromptMsg += "send asset ".ljust(padding) + ": send\n"
 loadedPromptMsg += "Read transaction of my account".ljust(padding) + ": searchsnapshots\n"
 loadedPromptMsg += "Pay USDT to ExinCore to trade BTC".ljust(padding) + ": tradebtc\n"
 loadedPromptMsg += "Pay USDT to ExinCore to trade Zcash".ljust(padding) + ": tradezec\n"
+loadedPromptMsg += "Instant exchange : ExinCore ".ljust(padding) + ": instanttrade\n"
 
 loadedPromptMsg += "List account withdraw address".ljust(padding) + ": manageassets\n"
 loadedPromptMsg += "verify pin".ljust(padding) + ": verifypin\n"
@@ -539,6 +561,56 @@ while ( 1 > 0 ):
                     if (checkResult == "YES"):
                         loadSnapshots(mixinApiNewUserInstance, transfer_result.get("data").get("created_at"), "")
                     
+    if ( cmd == 'instanttrade'):
+        # Pack memo
+
+        exin_assets_price = fetchExinPrice(USDT_ASSET_ID)
+        i = 0
+        for each_asset_price in exin_assets_price:
+            print(str(i).ljust(2) + ":" + str_AssetPrice(each_asset_price))
+            i = i + 1
+
+        if (len(exin_assets_price) > 0):
+
+            user_select_coin = int(input("which index:"))
+            selected_coin = exin_assets_price[user_select_coin]
+            buy_or_sell = input("buy or sell %s"%selected_coin.get("exchange_asset_symbol"))
+
+            if buy_or_sell == "sell":
+                target_asset_id = USDT_ASSET_ID
+                source_asset_id = selected_coin.get("exchange_asset")
+            if buy_or_sell == "buy":
+                target_asset_id = selected_coin.get("exchange_asset")
+                source_asset_id = USDT_ASSET_ID
+
+            if buy_or_sell == "sell" or buy_or_sell == "buy":
+                print("fetching latest price")
+                asset_price_result = fetchExinPrice(source_asset_id, target_asset_id)
+                asset_price = asset_price_result[0]
+                minimum_pay_base_asset = asset_price.get("minimum_amount")
+                maximum_pay_base_asset = asset_price.get("maximum_amount")
+                price_base_asset       = asset_price.get("price")
+                base_sym               = asset_price.get("base_asset_symbol")
+                target_sym             = asset_price.get("exchange_asset_symbol")
+
+                memo_for_exin = gen_memo_ExinBuy(target_asset_id)
+
+                balance_base_asset = mixinApiNewUserInstance.getAsset(source_asset_id).get("data").get("balance")
+                amount_to_pay =  input("how much you want to pay, %s in your balance:"%balance_base_asset)
+                this_uuid = str(uuid.uuid1())
+                estimated_target_amount = str(float(amount_to_pay)/float(price_base_asset))
+                confirm_pay = input("Pay " + amount_to_pay + " " + base_sym + " to buy " + estimated_target_amount + " " + target_sym + " on ExinCore" + ", Type YES and press enter key to confirm")
+                if ( confirm_pay == "YES" ):
+                    input_pin = getpass.getpass("pin code:")
+
+                    transfer_result = mixinApiNewUserInstance.transferTo(EXINCORE_UUID, source_asset_id, amount_to_pay, memo_for_exin, this_uuid, input_pin)
+                    if(transfer_result != False):
+                        snapShotID = transfer_result.get("data").get("snapshot_id")
+                        print("Pay " + amount_to_pay + " " + base_sym + "to ExinCore to buy " + estimated_target_amount + target_sym + " by uuid:" + this_uuid + ", you can verify the result on https://mixin.one/snapshots/" + snapShotID)
+                        checkResult = input("Type YES and press enter key to check latest snapshot:")
+                        if (checkResult == "YES"):
+                            loadSnapshots(mixinApiNewUserInstance, transfer_result.get("data").get("created_at"), "")
+
     if ( cmd == 'create' ):
         key = RSA.generate(1024)
         pubkey = key.publickey()
