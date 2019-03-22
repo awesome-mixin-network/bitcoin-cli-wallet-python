@@ -9,9 +9,9 @@ The battery included python Bitcoin wallet can:
 * create unlimited Bitcoin wallet
 * read Bitcoin balance
 * Withdraw Bitcoin to another Bitcoin address
-* Sell USDT to exchange and receive Bitcoin in 1 second
-* Sell Bitcoin to exchange and receive USDT in 1 second
 * Hold 12 Other Blockchains token, LTC, Ethereum, Ethereum Classic, EOS, Doge, Dash, BCH, Zen, Nem, Ripple, Zcash, Sia.
+* Trade bitcoin inside wallet, Bitcoin is sent to your wallet in 1 second. No need register account or provide identity.(Support by [Exinone](https://exinone.com and [Ocean Exchange](https://ocean.one))
+* Sell any ERC20 token and EOS token inside wallet.(Support by [Ocean Exchange](https://ocean.one))
 
 Full Mixin network resource [index](https://github.com/awesome-mixin-network/index_of_Mixin_Network_resource)
 
