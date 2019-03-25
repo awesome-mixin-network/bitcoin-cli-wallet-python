@@ -307,9 +307,7 @@ loadedPromptMsg  = "Read account asset non-zero balance".ljust(padding) + ": bal
 loadedPromptMsg += "deposit asset ".ljust(padding) + ": deposit\n"
 loadedPromptMsg += "send asset ".ljust(padding) + ": send\n"
 loadedPromptMsg += "Read transaction of my account".ljust(padding) + ": searchsnapshots\n"
-loadedPromptMsg += "Pay USDT to ExinCore to trade BTC".ljust(padding) + ": tradebtc\n"
-loadedPromptMsg += "Pay USDT to ExinCore to trade Zcash".ljust(padding) + ": tradezec\n"
-loadedPromptMsg += "Instant exchange : ExinCore ".ljust(padding) + ": instanttrade\n"
+loadedPromptMsg += "Instant exchange BTC, USDT ... : ExinCore ".ljust(padding) + ": instanttrade\n"
 loadedPromptMsg += "Ocean.one protocol exchange : ocean.one".ljust(padding) + ": ocean\n"
 
 loadedPromptMsg += "List account withdraw address".ljust(padding) + ": manageassets\n"
@@ -509,59 +507,7 @@ while ( 1 > 0 ):
                 except :
                     print(created_at_snap +": You receive: " + str(amount_snap) + " " + asset_snap + " from " + opponent_id_snapshot + " with memo:" + memo_at_snap)
 
-    if ( cmd == 'tradebtc' or cmd == "tradezec"):
-        # Pack memo
-        buy_or_sell = input("buy or sell:")
-
-        if buy_or_sell == "sell" and cmd == "tradebtc":
-            print("fetching latest price")
-            target_asset_id = USDT_ASSET_ID
-            source_asset_id = BTC_ASSET_ID
-        if buy_or_sell == "buy" and cmd == "tradebtc":
-            target_asset_id = BTC_ASSET_ID
-            source_asset_id = USDT_ASSET_ID
-        if buy_or_sell == "sell" and cmd == "tradezec":
-            print("fetching latest price")
-            target_asset_id = USDT_ASSET_ID
-            source_asset_id = ZEC_ASSET_ID
-        if buy_or_sell == "buy" and cmd == "tradezec":
-            target_asset_id = ZEC_ASSET_ID 
-            source_asset_id = USDT_ASSET_ID
-
-
-        result_fetchPrice = requests.get('https://exinone.com/exincore/markets', params={'base_asset':source_asset_id, 'exchange_asset':target_asset_id})
-        exin_response = result_fetchPrice.json()
-        if (exin_response.get("code") == 0):
-            datalist_in_response = exin_response.get("data")
-            for eachData in datalist_in_response:
-                minimum_pay_base_asset = eachData.get("minimum_amount")
-                maximum_pay_base_asset = eachData.get("maximum_amount")
-                price_base_asset       = eachData.get("price")
-                base_sym = eachData.get("base_asset_symbol")
-                target_sym = eachData.get("exchange_asset_symbol")
-                supported_by_exchanges = ""
-                for eachExchange in eachData.get("exchanges"):
-                    supported_by_exchanges += eachExchange
-                    supported_by_exchanges += " "
-                print("%s %s / %s, amount range( %s - %s), exchange: %s"%(price_base_asset, eachData.get("base_asset_symbol"), eachData.get("exchange_asset_symbol"), minimum_pay_base_asset, maximum_pay_base_asset, supported_by_exchanges))
-            memo_for_exin = gen_memo_ExinBuy(target_asset_id)
-
-            balance_base_asset = mixinApiNewUserInstance.getAsset(source_asset_id).get("data").get("balance")
-            amount_to_pay =  input("how much you want to pay, %s in your balance:"%balance_base_asset)
-            this_uuid = str(uuid.uuid1())
-            estimated_target_amount = str(float(amount_to_pay)/float(price_base_asset))
-            confirm_pay = input("Pay " + amount_to_pay + " " + base_sym + " to buy " + estimated_target_amount + " " + target_sym + " on ExinCore" + ", Type YES and press enter key to confirm")
-            if ( confirm_pay == "YES" ):
-                input_pin = getpass.getpass("pin code:")
-
-                transfer_result = mixinApiNewUserInstance.transferTo(EXINCORE_UUID, source_asset_id, amount_to_pay, memo_for_exin, this_uuid, input_pin)
-                if(transfer_result != False):
-                    snapShotID = transfer_result.get("data").get("snapshot_id")
-                    print("Pay " + amount_to_pay + " " + base_sym + "to ExinCore to buy " + estimated_target_amount + target_sym + " by uuid:" + this_uuid + ", you can verify the result on https://mixin.one/snapshots/" + snapShotID)
-                    checkResult = input("Type YES and press enter key to check latest snapshot:")
-                    if (checkResult == "YES"):
-                        loadSnapshots(mixinApiNewUserInstance, transfer_result.get("data").get("created_at"), "")
-                    
+                   
     if ( cmd == 'instanttrade'):
         # Pack memo
 
