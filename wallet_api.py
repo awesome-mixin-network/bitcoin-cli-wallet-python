@@ -29,11 +29,15 @@ class userInfo():
 
 class asset():
     def __init__(self, jsonInput):
+        self.type     = jsonInput.get("type")
         self.name     = jsonInput.get("name")
         self.asset_id = jsonInput.get("asset_id")
         self.chain_id = jsonInput.get("chain_id")
         self.balance  = jsonInput.get("balance")
         self.symbol   = jsonInput.get("symbol")
+        self.pubkey   = jsonInput.get("public_key")
+        self.account_name = jsonInput.get("account_name")
+        self.account_tag  = jsonInput.get("account_tag")
 
 class WalletRecord():
     def __init__(self, pin, userid, session_id, pin_token, private_key):

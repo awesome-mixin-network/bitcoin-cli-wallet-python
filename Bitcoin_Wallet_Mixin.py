@@ -344,6 +344,7 @@ while ( 1 > 0 ):
         all_assets = []
         for eachJson in all_assets_json:
             all_assets.append(wallet_api.asset(eachJson))
+            print(eachJson)
         asset_id_groups_in_myassets = []
         for eachAsset in all_assets:
             asset_id_groups_in_myassets.append(eachAsset.asset_id)
@@ -370,8 +371,9 @@ while ( 1 > 0 ):
             asset_id_groups_in_myassets.append(eachAsset.get("asset_id"))
         for eachAssetID in MIXIN_DEFAULT_CHAIN_GROUP:
             if ( not (eachAssetID in asset_id_groups_in_myassets)):
-                eachAsset = mixinApiNewUserInstance.getAsset(eachAssetID).get("data")
-                print("%s: %s" %(eachAsset.get("name").ljust(15), strPresent_of_depositAddress_from(eachAsset)))
+                eachAssetJson = mixinApiNewUserInstance.getAsset(eachAssetID).get("data")
+                wallet_api.asset(eachAssetJson)
+                print("%s: %s" %(eachAsset.name.ljust(15), strPresent_of_depositAddress_from(eachAssetJson)))
         print("===========")
 
     if (cmd == "send"):
