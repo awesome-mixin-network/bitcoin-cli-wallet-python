@@ -70,12 +70,29 @@ def deposit_chosen(button, wallet_obj):
 
 def balance_chosen(button, wallet_obj):
     menu_buttons = []
-    response = urwid.Text([u'in ', button.label, u'\n'])
-    menu_buttons.append(response)
 
-    done = menu_button(u'Ok', exit_program)
-    menu_buttons.append(done)
-    top.open_box(urwid.Filler(urwid.Pile(menu_buttons)))
+    all_assets = wallet_obj.get_balance()
+    for eachAsset in all_assets:
+        menu_buttons.append(menu_button_withobj(eachAsset.name.ljust(15)+":"+ eachAsset.balance, asset_chosen, (wallet_obj, eachAsset)))
+
+    top.open_box(menu(u'user id:' + wallet_obj.userid, menu_buttons))
+
+
+def asset_chosen(button, wallet_asset_obj):
+    wallet_obj = wallet_asset_obj[0]
+    asset_obj  = wallet_asset_obj[1]
+    menu_buttons = []
+    menu_buttons.append(menu_button_withobj("send", balance_chosen, wallet_obj))
+    menu_buttons.append(menu_button_withobj("deposit", deposit_chosen, wallet_obj))
+    menu_buttons.append(menu_button_withobj("send", send_chosen, wallet_obj))
+    menu_buttons.append(menu_button_withobj("search snapshots", send_chosen, wallet_obj))
+    menu_buttons.append(menu_button_withobj("instant exchange token in exin", send_chosen, wallet_obj))
+    menu_buttons.append(menu_button_withobj("ocean.one exchange", send_chosen, wallet_obj))
+    menu_buttons.append(menu_button_withobj("manage asset", manageasset_chosen, wallet_obj))
+    menu_buttons.append(menu_button_withobj("verify pin", verifypin_chosen, wallet_obj))
+    menu_buttons.append(menu_button_withobj("update pin", verifypin_chosen, wallet_obj))
+
+    top.open_box(menu(asset_obj.name.ljust(15)+":"+ asset_obj.balance, menu_buttons))
 
 
 def wallet_chosen(button, wallet_obj):
