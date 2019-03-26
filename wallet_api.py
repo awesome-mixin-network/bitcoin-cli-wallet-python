@@ -17,6 +17,16 @@ class RSAKey4Mixin():
         self.session_key = session_key.decode()
         self.private_key = private_key.decode()
  
+class userInfo():
+    def __init__(self, pin_token = "", session_id = "", user_id = ""):
+        self.pin_token = pin_token
+        self.session_id = session_id
+        self.user_id = user_id
+    def fromcreateUserJson(self, userInfojson):
+        self.pin_token  = userInfojson.get("data").get("pin_token")
+        self.session_id = userInfojson.get("data").get("session_id")
+        self.user_id    = userInfojson.get("data").get("user_id")
+
 class WalletRecord():
     def __init__(self, pin, userid, session_id, pin_token, private_key):
        self.pin = pin

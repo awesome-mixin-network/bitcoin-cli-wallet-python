@@ -552,19 +552,24 @@ while ( 1 > 0 ):
             "full_name": account_name
         }
         token_from_freeweb = mixinApiBotInstance.fetchTokenForCreateUser(body,  "http://freemixinapptoken.myrual.me/token")
-        userInfo = mixinApiBotInstance.createUser(thisAccountRSAKeyPair.session_key, account_name, token_from_freeweb)
-        print(userInfo.get("data").get("user_id"))
+        userInfoJson = mixinApiBotInstance.createUser(thisAccountRSAKeyPair.session_key, account_name, token_from_freeweb)
+        print(userInfoJson)
+        newuserInfo = wallet_api.userInfo()
+        newuserInfo.fromcreateUserJson(userInfoJson)
+
+        print(newuserInfo.user_id)
+        input("pause")
         with open('new_users.csv', 'a', newline='') as csvfile:
             csvwriter = csv.writer(csvfile)
             csvwriter.writerow([thisAccountRSAKeyPair.private_key,
-                                userInfo.get("data").get("pin_token"),
-                                userInfo.get("data").get("session_id"),
-                                userInfo.get("data").get("user_id"),
+                                newuserInfo.pin_token,
+                                newuserInfo.session_id,
+                                newuserInfo.user_id,
                                 ""])
         mixinApiNewUserInstance = generateMixinAPI(thisAccountRSAKeyPair.private_key,
-                                                    userInfo.get("data").get("pin_token"),
-                                                    userInfo.get("data").get("session_id"),
-                                                    userInfo.get("data").get("user_id"),
+                                                    newuserInfo.pin_token,
+                                                    newuserInfo.session_id,
+                                                    newuserInfo.user_id,
                                                     "","")
         defauled_pin = getpass.getpass("input pin:")
         pinInfo = mixinApiNewUserInstance.updatePin(defauled_pin,"")
