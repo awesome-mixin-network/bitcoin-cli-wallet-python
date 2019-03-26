@@ -77,20 +77,24 @@ def balance_chosen(button, wallet_obj):
 
     top.open_box(menu(u'user id:' + wallet_obj.userid, menu_buttons))
 
+def balance_send_to_mixin(button, wallet_asset_obj):
+    wallet_obj = wallet_asset_obj[0]
+    asset_obj  = wallet_asset_obj[1]
+
+    response = urwid.Text([u'Send ', asset_obj.name])
+    done = menu_button(u'Ok', exit_program)
+    top.open_box(urwid.Filler(urwid.Pile([response, done])))
+
+
 
 def asset_chosen(button, wallet_asset_obj):
     wallet_obj = wallet_asset_obj[0]
     asset_obj  = wallet_asset_obj[1]
     menu_buttons = []
-    menu_buttons.append(menu_button_withobj("send", balance_chosen, wallet_obj))
-    menu_buttons.append(menu_button_withobj("deposit", deposit_chosen, wallet_obj))
-    menu_buttons.append(menu_button_withobj("send", send_chosen, wallet_obj))
-    menu_buttons.append(menu_button_withobj("search snapshots", send_chosen, wallet_obj))
-    menu_buttons.append(menu_button_withobj("instant exchange token in exin", send_chosen, wallet_obj))
-    menu_buttons.append(menu_button_withobj("ocean.one exchange", send_chosen, wallet_obj))
-    menu_buttons.append(menu_button_withobj("manage asset", manageasset_chosen, wallet_obj))
-    menu_buttons.append(menu_button_withobj("verify pin", verifypin_chosen, wallet_obj))
-    menu_buttons.append(menu_button_withobj("update pin", verifypin_chosen, wallet_obj))
+    menu_buttons.append(menu_button_withobj("send to mixin account", balance_send_to_mixin, wallet_asset_obj))
+    menu_buttons.append(menu_button_withobj("deposit address", deposit_chosen, wallet_obj))
+    menu_buttons.append(menu_button_withobj("recent transaction", send_chosen, wallet_obj))
+    menu_buttons.append(menu_button_withobj("manage withdraw contacts", manageasset_chosen, wallet_obj))
 
     top.open_box(menu(asset_obj.name.ljust(15)+":"+ asset_obj.balance, menu_buttons))
 
