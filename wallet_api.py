@@ -1,4 +1,5 @@
 import csv
+from mixin_api import MIXIN_API
 from Crypto.PublicKey import RSA
 
 def pubkeyContent(inputContent):
@@ -6,6 +7,25 @@ def pubkeyContent(inputContent):
     contentWithoutTail = contentWithoutHeader[:-1 * (len("-----END PUBLIC KEY-----") + 1)]
     contentWithoutReturn = contentWithoutTail[:64] + contentWithoutTail[65:129] + contentWithoutTail[130:194] + contentWithoutTail[195:]
     return contentWithoutReturn
+
+class MIXIN_config():
+    def __init__(self):
+        self.private_key       = ""
+        self.pin_token         = ""
+        self.pay_session_id    = ""
+        self.client_id         = ""
+        self.client_secret     = ""
+        self.pay_pin           = ""
+
+def generateMixinAPI(private_key,pin_token,session_id,user_id,pin,client_secret):
+    mixin_config = MIXIN_config()
+    mixin_config.private_key       = private_key
+    mixin_config.pin_token         = pin_token
+    mixin_config.pay_session_id    = session_id
+    mixin_config.client_id         = user_id
+    mixin_config.client_secret     = client_secret
+    mixin_config.pay_pin           = pin
+    return  MIXIN_API(mixin_config)
 
 
 class RSAKey4Mixin():
@@ -27,7 +47,7 @@ class userInfo():
         self.session_id = userInfojson.get("data").get("session_id")
         self.user_id    = userInfojson.get("data").get("user_id")
 
-class asset():
+class Asset():
     def __init__(self, jsonInput):
         self.type     = jsonInput.get("type")
         self.name     = jsonInput.get("name")
@@ -46,6 +66,22 @@ class WalletRecord():
        self.session_id = session_id
        self.pin_token = pin_token
        self.private_key = private_key
+       self.mixinAPIInstance = generateMixinAPI(self.private_key,
+                                                            self.pin_token,
+                                                            self.session_id,
+                                                            self.userid,
+                                                            self.pin,"")
+    def get_balance(self):
+        all_assets_json = self.mixinAPIInstance.getMyAssets()
+        all_assets = []
+        for eachJson in all_assets_json:
+            all_assets.append(Asset(eachJson))
+
+        return all_assets
+
+
+
+
 
 def append_wallet_into_csv_file(this_wallet, file_name):
     with open(file_name, 'a', newline='') as csvfile:

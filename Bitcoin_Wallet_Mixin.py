@@ -310,8 +310,10 @@ loadedPromptMsg += "updatepin".ljust(padding) + ": updatepin\n"
 loadedPromptMsg += "switch account".ljust(padding) + ": switch\n"
 
 global mixinApiNewUserInstance
+global mixinWalletInstance
 global mixin_account_name
 mixinApiNewUserInstance = None
+mixinWalletInstance = None
 mixin_account_name = None
 while ( 1 > 0 ):
     if (mixinApiNewUserInstance != None):
@@ -333,6 +335,7 @@ while ( 1 > 0 ):
         user_index = input(("%d account in your file, load which account: "%len(wallet_records)))
  
         selected_wallet = wallet_records[int(user_index)]
+        mixinWalletInstance = selected_wallet
         mixinApiNewUserInstance = generateMixinAPI(selected_wallet.private_key,
                                                             selected_wallet.pin_token,
                                                             selected_wallet.session_id,
@@ -340,11 +343,7 @@ while ( 1 > 0 ):
                                                             selected_wallet.pin,"")
     if ( cmd == 'balance' ):
         print(time.time())
-        all_assets_json = mixinApiNewUserInstance.getMyAssets()
-        all_assets = []
-        for eachJson in all_assets_json:
-            all_assets.append(wallet_api.asset(eachJson))
-            print(eachJson)
+        all_assets = mixinWalletInstance.get_balance()
         asset_id_groups_in_myassets = []
         for eachAsset in all_assets:
             asset_id_groups_in_myassets.append(eachAsset.asset_id)
