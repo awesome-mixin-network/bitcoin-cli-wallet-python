@@ -7,3 +7,4 @@ pyyaml>=4.2b1
 requests==2.21.0
 websocket-client==0.54.0
 u-msgpack-python
+urwid
