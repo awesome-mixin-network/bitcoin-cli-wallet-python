@@ -1,4 +1,3 @@
-from Crypto.PublicKey import RSA
 from mixin_api import MIXIN_API
 import uuid
 import mixin_config
@@ -54,12 +53,6 @@ AMOUNT          = "0.001";
 # // |ZEN|a2c5d22b-62a2-4c13-b3f0-013290dbac60
 # // |ZEC|c996abc9-d94e-4494-b1cf-2a3fd3ac5714
 # // |BCH|fd11b6e3-0b87-41f1-a41f-f0e9b49e5bf0
-
-def pubkeyContent(inputContent):
-    contentWithoutHeader= inputContent[len("-----BEGIN PUBLIC KEY-----") + 1:]
-    contentWithoutTail = contentWithoutHeader[:-1 * (len("-----END PUBLIC KEY-----") + 1)]
-    contentWithoutReturn = contentWithoutTail[:64] + contentWithoutTail[65:129] + contentWithoutTail[130:194] + contentWithoutTail[195:]
-    return contentWithoutReturn
 
 def generateMixinAPI(private_key,pin_token,session_id,user_id,pin,client_secret):
     mixin_config.private_key       = private_key
@@ -551,31 +544,24 @@ while ( 1 > 0 ):
                                 loadSnapshots(mixinApiNewUserInstance, transfer_result.get("data").get("created_at"), target_asset_id)
      
     if ( cmd == 'create' ):
-        key = RSA.generate(1024)
-        pubkey = key.publickey()
-        print(key.exportKey())
-        print(pubkey.exportKey())
-        private_key = key.exportKey()
-        session_key = pubkeyContent(pubkey.exportKey())
-        # print(session_key)
-        input_session = session_key.decode()
+        thisAccountRSAKeyPair = wallet_api.RSAKey4Mixin()
         account_name  = "Tom Bot"
-        print(session_key.decode())
+        print(thisAccountRSAKeyPair.session_key)
         body = {
-            "session_secret": input_session,
+            "session_secret": thisAccountRSAKeyPair.session_key,
             "full_name": account_name
         }
         token_from_freeweb = mixinApiBotInstance.fetchTokenForCreateUser(body,  "http://freemixinapptoken.myrual.me/token")
-        userInfo = mixinApiBotInstance.createUser(input_session, account_name, token_from_freeweb)
+        userInfo = mixinApiBotInstance.createUser(thisAccountRSAKeyPair.session_key, account_name, token_from_freeweb)
         print(userInfo.get("data").get("user_id"))
         with open('new_users.csv', 'a', newline='') as csvfile:
             csvwriter = csv.writer(csvfile)
-            csvwriter.writerow([private_key.decode(),
+            csvwriter.writerow([thisAccountRSAKeyPair.private_key,
                                 userInfo.get("data").get("pin_token"),
                                 userInfo.get("data").get("session_id"),
                                 userInfo.get("data").get("user_id"),
                                 ""])
-        mixinApiNewUserInstance = generateMixinAPI(private_key.decode(),
+        mixinApiNewUserInstance = generateMixinAPI(thisAccountRSAKeyPair.private_key,
                                                     userInfo.get("data").get("pin_token"),
                                                     userInfo.get("data").get("session_id"),
                                                     userInfo.get("data").get("user_id"),
