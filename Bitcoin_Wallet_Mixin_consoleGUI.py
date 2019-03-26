@@ -80,8 +80,6 @@ def balance_chosen(button, wallet_obj):
 
 def wallet_chosen(button, wallet_obj):
     menu_buttons = []
-    response = urwid.Text([u'You chose ', wallet_obj.userid, u'\n'])
-    menu_buttons.append(response)
     menu_buttons.append(menu_button_withobj("balance", balance_chosen, wallet_obj))
     menu_buttons.append(menu_button_withobj("deposit", deposit_chosen, wallet_obj))
     menu_buttons.append(menu_button_withobj("send", send_chosen, wallet_obj))
@@ -92,8 +90,7 @@ def wallet_chosen(button, wallet_obj):
     menu_buttons.append(menu_button_withobj("verify pin", verifypin_chosen, wallet_obj))
     menu_buttons.append(menu_button_withobj("update pin", verifypin_chosen, wallet_obj))
 
-    top.open_box(urwid.Filler(urwid.Pile(menu_buttons)))
-
+    top.open_box(menu(u'user id:' + wallet_obj.userid, menu_buttons))
 
 def item_chosen(button):
     response = urwid.Text([u'You chose ', button.label, u'\n'])
@@ -115,7 +112,7 @@ def create_wallet(button):
 
 
 
-menu_top = menu(u'Main Menu', [
+menu_top = menu(u'Mixin pywallet', [
     menu_button(u'load wallet', load_wallet),
     sub_menu(u'create wallet', [
         sub_menu(u'Preferences', [
