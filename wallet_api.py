@@ -27,6 +27,14 @@ class userInfo():
         self.session_id = userInfojson.get("data").get("session_id")
         self.user_id    = userInfojson.get("data").get("user_id")
 
+class asset():
+    def __init__(self, jsonInput):
+        self.name     = jsonInput.get("name")
+        self.asset_id = jsonInput.get("asset_id")
+        self.chain_id = jsonInput.get("chain_id")
+        self.balance  = jsonInput.get("balance")
+        self.symbol   = jsonInput.get("symbol")
+
 class WalletRecord():
     def __init__(self, pin, userid, session_id, pin_token, private_key):
        self.pin = pin
@@ -34,6 +42,15 @@ class WalletRecord():
        self.session_id = session_id
        self.pin_token = pin_token
        self.private_key = private_key
+
+def append_wallet_into_csv_file(this_wallet, file_name):
+    with open(file_name, 'a', newline='') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        csvwriter.writerow([this_wallet.private_key,
+                            this_wallet.pin_token,
+                            this_wallet.session_id,
+                            this_wallet.user_id,
+                            ""])
 
 def load_wallet_csv_file(file_name):
     with open(file_name, newline='') as csvfile:

@@ -339,15 +339,21 @@ while ( 1 > 0 ):
                                                             selected_wallet.userid,
                                                             selected_wallet.pin,"")
     if ( cmd == 'balance' ):
-        all_asset = mixinApiNewUserInstance.getMyAssets()
+        print(time.time())
+        all_assets_json = mixinApiNewUserInstance.getMyAssets()
+        all_assets = []
+        for eachJson in all_assets_json:
+            all_assets.append(wallet_api.asset(eachJson))
         asset_id_groups_in_myassets = []
-        for eachAsset in all_asset:
-            asset_id_groups_in_myassets.append(eachAsset.get("asset_id"))
+        for eachAsset in all_assets:
+            asset_id_groups_in_myassets.append(eachAsset.asset_id)
 
         print("Your asset balance is\n===========")
 
-        for eachAsset in all_asset:
-            print("%s: %s" %(eachAsset.get("name").ljust(15), eachAsset.get("balance")))
+        for eachAsset in all_assets:
+            print("%s: %s" %(eachAsset.name.ljust(15), eachAsset.balance))
+        print(time.time())
+
         for eachAssetID in MIXIN_DEFAULT_CHAIN_GROUP:
             if ( not (eachAssetID in asset_id_groups_in_myassets)):
                 eachAsset = mixinApiNewUserInstance.getAsset(eachAssetID).get("data")
@@ -556,17 +562,12 @@ while ( 1 > 0 ):
         print(userInfoJson)
         newuserInfo = wallet_api.userInfo()
         newuserInfo.fromcreateUserJson(userInfoJson)
+        newuserInfo.private_key = thisAccountRSAKeyPair.private_key
 
         print(newuserInfo.user_id)
         input("pause")
-        with open('new_users.csv', 'a', newline='') as csvfile:
-            csvwriter = csv.writer(csvfile)
-            csvwriter.writerow([thisAccountRSAKeyPair.private_key,
-                                newuserInfo.pin_token,
-                                newuserInfo.session_id,
-                                newuserInfo.user_id,
-                                ""])
-        mixinApiNewUserInstance = generateMixinAPI(thisAccountRSAKeyPair.private_key,
+        wallet_api.append_wallet_into_csv_file(newuserInfo, 'new_users.csv')
+        mixinApiNewUserInstance = generateMixinAPI(newuserInfo.private_key,
                                                     newuserInfo.pin_token,
                                                     newuserInfo.session_id,
                                                     newuserInfo.user_id,
