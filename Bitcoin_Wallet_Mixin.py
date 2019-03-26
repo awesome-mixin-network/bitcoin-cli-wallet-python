@@ -10,6 +10,7 @@ import umsgpack
 import base64
 import getpass
 import requests
+import wallet_api
 
 PIN             = "945689";
 PIN2            = "845689";
@@ -331,29 +332,19 @@ while ( 1 > 0 ):
         mixinApiNewUserInstance = None
     print("Run...")
     if ( cmd == 'loaduser'):
-        with open('new_users.csv', newline='') as csvfile:
-            reader  = csv.reader(csvfile)
-
-            user_accounts = []
-            i = 0
-            for row in reader:
-                user_accounts.append(row)
-                print("%d: user_id-> %s"%(i, row[-2]))
-                i = i + 1
-
-            user_index = input(("%d account in your file, load which account: "%len(user_accounts)))
+        wallet_records = wallet_api.load_wallet_csv_file('new_users.csv')
+        i = 0
+        for each_wallet in wallet_records:
+            print("%d: user_id-> %s"%(i, each_wallet.userid))
+            i = i + 1
+        user_index = input(("%d account in your file, load which account: "%len(wallet_records)))
  
-            row = user_accounts[int(user_index)]
-            pin         = row.pop()
-            userid      = row.pop()
-            session_id  = row.pop()
-            pin_token   = row.pop()
-            private_key = row.pop()
-            mixinApiNewUserInstance = generateMixinAPI(private_key,
-                                                            pin_token,
-                                                            session_id,
-                                                            userid,
-                                                            pin,"")
+        selected_wallet = wallet_records[int(user_index)]
+        mixinApiNewUserInstance = generateMixinAPI(selected_wallet.private_key,
+                                                            selected_wallet.pin_token,
+                                                            selected_wallet.session_id,
+                                                            selected_wallet.userid,
+                                                            selected_wallet.pin,"")
     if ( cmd == 'balance' ):
         all_asset = mixinApiNewUserInstance.getMyAssets()
         asset_id_groups_in_myassets = []
@@ -557,7 +548,7 @@ while ( 1 > 0 ):
                             print("Pay " + amount_to_pay + " " + base_sym + "to ExinCore to buy " + estimated_target_amount + target_sym + " by uuid:" + this_uuid + ", you can verify the result on https://mixin.one/snapshots/" + snapShotID)
                             checkResult = input("Type YES and press enter key to check latest snapshot:")
                             if (checkResult == "YES"):
-                                loadSnapshots(mixinApiNewUserInstance, transfer_result.get("data").get("created_at"), "")
+                                loadSnapshots(mixinApiNewUserInstance, transfer_result.get("data").get("created_at"), target_asset_id)
      
     if ( cmd == 'create' ):
         key = RSA.generate(1024)
