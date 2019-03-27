@@ -126,12 +126,9 @@ def asset_chosen(button, wallet_asset_obj):
 def wallet_chosen(button, wallet_obj):
     wallet_chosen_menu_buttons = []
     wallet_chosen_menu_buttons.append(menu_button_withobj("balance", balance_chosen, wallet_obj))
-    wallet_chosen_menu_buttons.append(menu_button_withobj("deposit", deposit_chosen, wallet_obj))
-    wallet_chosen_menu_buttons.append(menu_button_withobj("send", send_chosen, wallet_obj))
     wallet_chosen_menu_buttons.append(menu_button_withobj("search snapshots", send_chosen, wallet_obj))
     wallet_chosen_menu_buttons.append(menu_button_withobj("instant exchange token in exin", send_chosen, wallet_obj))
     wallet_chosen_menu_buttons.append(menu_button_withobj("ocean.one exchange", send_chosen, wallet_obj))
-    wallet_chosen_menu_buttons.append(menu_button_withobj("manage asset", manageasset_chosen, wallet_obj))
     wallet_chosen_menu_buttons.append(menu_button_withobj("verify pin", verifypin_chosen, wallet_obj))
     wallet_chosen_menu_buttons.append(menu_button_withobj("update pin", verifypin_chosen, wallet_obj))
     wallet_chosen_menu_buttons.append(menu_button(u'Back', pop_current_menu))
