@@ -79,14 +79,6 @@ def send_confirm_chosen(button, wallet_asset_uuid_amount_pin_obj):
         done = menu_button(u'Ok', pop_current_menu)
         top.open_box(urwid.Filler(urwid.Pile([response, done])))
 
-def uuid_change(widget, text):
-    input_destination_uuid= text
-def memo_change(widget, text):
-    input_memo= text
-def amount_change(widget, text):
-    input_amount= text
-def pin_change(widget, text):
-    input_pin_code = text
 def send_chosen(button, wallet_asset_obj):
 
     wallet_obj = wallet_asset_obj[0]
@@ -228,15 +220,6 @@ menu_top = menu(u'Mixin pywallet', [
     ]),
     menu_button('exit', exit_program)
 ])
-
-input_destination_uuid= "uuid"
-input_pin_code  = "pin"
-input_amount = "amount"
-input_account_name = ""
-input_account_tag = ""
-input_address_tag = ""
-input_memo = "memo"
-destination_uuid_field = urwid.Edit(u'Destination uuid:\n')
 
 
 class CascadingBoxes(urwid.WidgetPlaceholder):
