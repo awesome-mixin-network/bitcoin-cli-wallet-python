@@ -47,7 +47,15 @@ class userInfo():
         self.session_id = userInfojson.get("data").get("session_id")
         self.user_id    = userInfojson.get("data").get("user_id")
 
-class Asset():
+class Static_Asset():
+    def __init__(self, jsonInput):
+        self.type     = jsonInput.get("type")
+        self.name     = jsonInput.get("name")
+        self.asset_id = jsonInput.get("asset_id")
+        self.chain_id = jsonInput.get("chain_id")
+        self.symbol   = jsonInput.get("symbol")
+ 
+class Asset(Static_Asset):
     def __init__(self, jsonInput):
         self.type     = jsonInput.get("type")
         self.name     = jsonInput.get("name")
@@ -80,6 +88,18 @@ class Address():
         self.reserve      = jsonInput.get("reserve")
         self.dust         = jsonInput.get("dust")
         self.updated_at   = jsonInput.get("updated_at")
+
+class Transfer():
+    def __init__(self, jsonInput):
+        self.amount       = jsonInput.get("amount")
+        self.memo         = jsonInput.get("memo")
+        self.snapshot_id  = jsonInput.get("snapshot_id")
+
+        self.asset_id     = jsonInput.get("asset_id")
+        self.type         = jsonInput.get("type")
+        self.trace_id     = jsonInput.get("trace_id")
+        self.opponent_id  = jsonInput.get("opponent_id")
+
 
 
 class WalletRecord():
@@ -116,6 +136,12 @@ class WalletRecord():
     def remove_address(self, to_be_deleted_address_id, input_pin):
         create_result_json = self.mixinAPIInstance.delAddress(to_be_deleted_address_id, input_pin)
         return create_result_json
+    def transfer_to(self, destination_uuid, asset_id, amount_tosend, memo_input, this_uuid, asset_pin_input):
+        transfer_result_json = self.mixinAPIInstance.transferTo(destination_uuid, asset_id, amount_tosend, memo_input, this_uuid, asset_pin_input)
+        if(transfer_result_json != False):
+            return Transfer(transfer_result_json.get("data"))
+
+        return False
 
 
 

@@ -409,10 +409,9 @@ while ( 1 > 0 ):
                     this_uuid = str(uuid.uuid1())
                     user_confirm = input("Type YES and press enter key to confirm: send %s %s to %s , memo:%s, trace id: %s:"%(amount_tosend, selected_asset.name, destination_uuid, memo_input, this_uuid))
                     if (user_confirm == "YES"):
-                        transfer_result = mixinApiNewUserInstance.transferTo(destination_uuid, selected_asset.asset_id, amount_tosend, memo_input, this_uuid, asset_pin_input)
+                        transfer_result = mixinWalletInstance.transfer_to(destination_uuid, selected_asset.asset_id, amount_tosend, memo_input, this_uuid, asset_pin_input)
                         if(transfer_result != False):
-                            snapShotID = transfer_result.get("data").get("snapshot_id")
-                            print("your transaction is confirmed by Mixin Network with snapshot: %s, you can verify on browser:%s"%(snapShotID, "https://mixin.one/snapshots/" + snapShotID))
+                            print("your transaction is confirmed by Mixin Network with snapshot: %s, you can verify on browser:%s"%(transfer_result.snapshot_id, "https://mixin.one/snapshots/" + transfer_result.snapshot_id))
                 if (address_type == "1"):
                     withdraw_addresses = mixinWalletInstance.get_asset_withdrawl_addresses(selected_asset.asset_id)
                     i = 0
