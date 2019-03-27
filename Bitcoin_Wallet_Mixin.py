@@ -362,8 +362,8 @@ while ( 1 > 0 ):
 
         for eachAssetID in MIXIN_DEFAULT_CHAIN_GROUP:
             if ( not (eachAssetID in asset_id_groups_in_myassets)):
-                eachAsset = mixinApiNewUserInstance.getAsset(eachAssetID).get("data")
-                print("%s: %s" %(eachAsset.get("name").ljust(15), eachAsset.get("balance")))
+                eachAsset = mixinWalletInstance.get_singleasset_balance(eachAssetID)
+                print("%s: %s" %(eachAsset.name.ljust(15), eachAsset.balance))
         print("===========")
     if (cmd == "deposit"):
 

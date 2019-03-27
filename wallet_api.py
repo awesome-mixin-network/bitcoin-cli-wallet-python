@@ -103,7 +103,7 @@ class WalletRecord():
         return all_assets
     def get_singleasset_balance(self, input_asset_id):
         single_asset_json = self.mixinAPIInstance.getAsset(input_asset_id)
-        return Asset(single_asset_json)
+        return Asset(single_asset_json.get("data"))
     def get_asset_withdrawl_addresses(self, input_asset_id):
         asset_addresses_json = self.mixinAPIInstance.withdrawals_address(input_asset_id).get("data")
         asset_addresses = []
