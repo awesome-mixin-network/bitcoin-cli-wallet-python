@@ -87,11 +87,31 @@ def add_withdraw_address_confirm_chosen(button, wallet_asset_uuid_amount_pin_obj
 
     if(create_address_result != False):
         response = urwid.Text(["the address :", deposit_address.get_edit_text(), " is added to your account with id:", create_address_result.address_id])
-        done = menu_button(u'Ok', pop_current_menu)
+        done = menu_button(u'Ok', pop_to_account_menu)
         top.open_box(urwid.Filler(urwid.Pile([response, done])))
     else:
         response = urwid.Text(["your transaction is failed"])
-        done = menu_button(u'Ok', pop_current_menu)
+        done = menu_button(u'Ok', pop_to_account_menu)
+        top.open_box(urwid.Filler(urwid.Pile([response, done])))
+
+
+def remove_withdraw_address_confirm_chosen(button, wallet_asset_uuid_amount_pin_obj):
+    wallet_obj = wallet_asset_uuid_amount_pin_obj[0]
+    address_obj  = wallet_asset_uuid_amount_pin_obj[1]
+    pin_obj    = wallet_asset_uuid_amount_pin_obj[2]
+    #let wallet create uuid for us
+    this_uuid  = ""
+
+    remove_address_result = wallet_obj.remove_address(address_obj.address_id, pin_obj.get_edit_text())
+    if(remove_address_result != False):
+        #pop_to_account_menu(button)
+        response = urwid.Text([str(remove_address_result)])
+        done = menu_button(u'Ok', pop_to_account_menu)
+        top.open_box(urwid.Filler(urwid.Pile([response, done])))
+
+    else:
+        response = urwid.Text(["your remove is failed"])
+        done = menu_button(u'Ok', pop_to_account_menu)
         top.open_box(urwid.Filler(urwid.Pile([response, done])))
 
 
@@ -196,6 +216,26 @@ def copy_content_to_system_clip(button, to_copy_content):
     done = menu_button(u'Ok', pop_current_menu)
     top.open_box(urwid.Filler(urwid.Pile([response, done])))
 
+def remove_withdraw_address_chosen(button, wallet_asset_obj):
+
+    wallet_obj = wallet_asset_obj[0]
+    address_obj  = wallet_asset_obj[1]
+
+    menu_buttons = []
+
+    exe_pin_code_field = urwid.Edit(u'pin:\n', mask=u"")
+    menu_buttons.append(exe_pin_code_field)
+
+    done = menu_button_withobj(u'Remove', remove_withdraw_address_confirm_chosen, (wallet_obj, address_obj, exe_pin_code_field))
+    #done = menu_button_withobj(u'Send', show_content, (wallet_obj, asset_obj, "12", "23", "memo", "pin"))
+
+    back = menu_button(u'Back', pop_current_menu)
+    menu_buttons.append(done)
+    menu_buttons.append(back)
+
+    top.open_box(menu(u'Remove address' + address_obj.label, menu_buttons))
+
+
 def show_withdraw_address_remove(button, wallet_asset_obj):
     wallet_obj = wallet_asset_obj[0]
     address_obj  = wallet_asset_obj[1]
@@ -220,7 +260,7 @@ def show_withdraw_address_remove(button, wallet_asset_obj):
 
     done = menu_button(u'Back', pop_current_menu)
     menu_buttons.append(done)
-    remove = menu_button(u'Remove', pop_current_menu)
+    remove = menu_button_withobj(u'Remove', remove_withdraw_address_chosen, (wallet_obj, address_obj))
     menu_buttons.append(remove)
 
     top.open_box(menu(u'Withdraw address detail', menu_buttons))
@@ -306,6 +346,8 @@ def exit_program(button):
     raise urwid.ExitMainLoop()
 def pop_current_menu(button):
     top.close_box()
+def pop_to_account_menu(button):
+    top.back_to_account()
 def load_wallet(button):
     wallet_records = wallet_api.load_wallet_csv_file('new_users.csv')
     load_wallet_menu_buttons = []
@@ -351,6 +393,11 @@ class CascadingBoxes(urwid.WidgetPlaceholder):
             top=self.box_level * 2,
             bottom=(self.max_box_levels - self.box_level - 1) * 2)
         self.box_level += 1
+    def back_to_account(self):
+        while (self.box_level > 3):
+            self.original_widget = self.original_widget[0]
+            self.box_level -= 1
+
     def close_box(self):
         if self.box_level > 1:
             self.original_widget = self.original_widget[0]
