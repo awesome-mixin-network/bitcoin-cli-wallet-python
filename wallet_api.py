@@ -68,6 +68,19 @@ class Asset():
             result_desposit.append({"title":"account_tag", "value":self.account_tag})
         return result_desposit
 
+class Address():
+    def __init__(self, jsonInput):
+        self.address_id   = jsonInput.get("address_id")
+        self.public_key   = jsonInput.get("public_key")
+        self.asset_id     = jsonInput.get("asset_id")
+        self.label        = jsonInput.get("label")
+        self.account_name = jsonInput.get("account_name")
+        self.account_tag  = jsonInput.get("account_tag")
+        self.fee          = jsonInput.get("fee")
+        self.reserve      = jsonInput.get("reserve")
+        self.dust         = jsonInput.get("dust")
+        self.updated_at   = jsonInput.get("updated_at")
+
 
 class WalletRecord():
     def __init__(self, pin, userid, session_id, pin_token, private_key):
@@ -91,6 +104,19 @@ class WalletRecord():
     def get_singleasset_balance(self, input_asset_id):
         single_asset_json = self.mixinAPIInstance.getAsset(input_asset_id)
         return Asset(single_asset_json)
+    def get_asset_withdrawl_addresses(self, input_asset_id):
+        asset_addresses_json = self.mixinAPIInstance.withdrawals_address(input_asset_id).get("data")
+        asset_addresses = []
+        for each_address_json in asset_addresses_json:
+            asset_addresses.append(Address(each_address_json))
+        return asset_addresses
+    def create_address(self, asset_id, public_key = "", label = "", asset_pin = "", account_name = "", account_tag = ""):
+        create_result_json = self.mixinAPIInstance.createAddress(asset_id, public_key , label , asset_pin , account_name , account_tag )
+        return Address(create_result_json.get("data"))
+    def remove_address(self, to_be_deleted_address_id, input_pin):
+        create_result_json = self.mixinAPIInstance.delAddress(to_be_deleted_address_id, input_pin)
+        return create_result_json
+
 
 
 def append_wallet_into_csv_file(this_wallet, file_name):
