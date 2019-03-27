@@ -8,3 +8,4 @@ requests==2.21.0
 websocket-client==0.54.0
 u-msgpack-python
 urwid
+pyperclip
