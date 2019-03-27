@@ -1,5 +1,6 @@
 import urwid
 import wallet_api
+import pyperclip
 
 def menu_button(caption, callback):
     button = urwid.Button(caption)
@@ -56,26 +57,35 @@ def send_chosen(button, wallet_obj):
 
 
 
-def deposit_chosen(button, wallet_obj):
-    menu_buttons = []
+def deposit_chosen(button, wallet_asset_obj):
+    deposit_chosen_menu_buttons = []
 
-    response = urwid.Text([u'', button.label, u'\n'])
-    menu_buttons.append(response)
-    done = menu_button(u'Ok', exit_program)
-    menu_buttons.append(done)
+    wallet_obj = wallet_asset_obj[0]
+    asset_obj  = wallet_asset_obj[1]
+ 
+    response = urwid.Text([u'Deposit address of ', asset_obj.name])
+    deposit_chosen_menu_buttons.append(response)
 
-    top.open_box(urwid.Filler(urwid.Pile(menu_buttons)))
+    deposit_address_title_value_segments = asset_obj.deposit_address()
+    for each_seg in deposit_address_title_value_segments:
+        deposit_chosen_menu_buttons.append(menu_button_withobj(("copy %s:%s"%(each_seg["title"], each_seg["value"])), copy_content_to_system_clip, each_seg["value"]))
+
+
+    deposit_chosen_menu_buttons.append(menu_button(u'Back', pop_current_menu))
+    top.open_box(urwid.Filler(urwid.Pile(deposit_chosen_menu_buttons)))
 
 
 
 def balance_chosen(button, wallet_obj):
-    menu_buttons = []
+    balance_chosen_menu_buttons = []
 
     all_assets = wallet_obj.get_balance()
     for eachAsset in all_assets:
-        menu_buttons.append(menu_button_withobj(eachAsset.name.ljust(15)+":"+ eachAsset.balance, asset_chosen, (wallet_obj, eachAsset)))
+        balance_chosen_menu_buttons.append(menu_button_withobj(eachAsset.name.ljust(15)+":"+ eachAsset.balance, asset_chosen, (wallet_obj, eachAsset)))
 
-    top.open_box(menu(u'user id:' + wallet_obj.userid, menu_buttons))
+
+    balance_chosen_menu_buttons.append(menu_button(u'Back', pop_current_menu))
+    top.open_box(menu(u'user id:' + wallet_obj.userid, balance_chosen_menu_buttons))
 
 def balance_send_to_mixin(button, wallet_asset_obj):
     wallet_obj = wallet_asset_obj[0]
@@ -87,31 +97,41 @@ def balance_send_to_mixin(button, wallet_asset_obj):
 
 
 
+def copy_content_to_system_clip(button, to_copy_content):
+    pyperclip.copy(to_copy_content)
+    response = urwid.Text([u'Content has been copied to your clipboard'])
+    done = menu_button(u'Ok', pop_current_menu)
+    top.open_box(urwid.Filler(urwid.Pile([response, done])))
+
+
+
 def asset_chosen(button, wallet_asset_obj):
     wallet_obj = wallet_asset_obj[0]
     asset_obj  = wallet_asset_obj[1]
-    menu_buttons = []
-    menu_buttons.append(menu_button_withobj("send to mixin account", balance_send_to_mixin, wallet_asset_obj))
-    menu_buttons.append(menu_button_withobj("deposit address", deposit_chosen, wallet_obj))
-    menu_buttons.append(menu_button_withobj("recent transaction", send_chosen, wallet_obj))
-    menu_buttons.append(menu_button_withobj("manage withdraw contacts", manageasset_chosen, wallet_obj))
+    asset_chosen_menu_buttons = []
+    asset_chosen_menu_buttons.append(menu_button_withobj("send to mixin account", balance_send_to_mixin, wallet_asset_obj))
+    asset_chosen_menu_buttons.append(menu_button_withobj("deposit address", deposit_chosen, wallet_asset_obj))
+    asset_chosen_menu_buttons.append(menu_button_withobj("recent transaction", send_chosen, wallet_obj))
+    asset_chosen_menu_buttons.append(menu_button_withobj("manage withdraw contacts", manageasset_chosen, wallet_obj))
+    asset_chosen_menu_buttons.append(menu_button(u'Back', pop_current_menu))
 
-    top.open_box(menu(asset_obj.name.ljust(15)+":"+ asset_obj.balance, menu_buttons))
+    top.open_box(menu(asset_obj.name.ljust(15)+":"+ asset_obj.balance, asset_chosen_menu_buttons))
 
 
 def wallet_chosen(button, wallet_obj):
-    menu_buttons = []
-    menu_buttons.append(menu_button_withobj("balance", balance_chosen, wallet_obj))
-    menu_buttons.append(menu_button_withobj("deposit", deposit_chosen, wallet_obj))
-    menu_buttons.append(menu_button_withobj("send", send_chosen, wallet_obj))
-    menu_buttons.append(menu_button_withobj("search snapshots", send_chosen, wallet_obj))
-    menu_buttons.append(menu_button_withobj("instant exchange token in exin", send_chosen, wallet_obj))
-    menu_buttons.append(menu_button_withobj("ocean.one exchange", send_chosen, wallet_obj))
-    menu_buttons.append(menu_button_withobj("manage asset", manageasset_chosen, wallet_obj))
-    menu_buttons.append(menu_button_withobj("verify pin", verifypin_chosen, wallet_obj))
-    menu_buttons.append(menu_button_withobj("update pin", verifypin_chosen, wallet_obj))
+    wallet_chosen_menu_buttons = []
+    wallet_chosen_menu_buttons.append(menu_button_withobj("balance", balance_chosen, wallet_obj))
+    wallet_chosen_menu_buttons.append(menu_button_withobj("deposit", deposit_chosen, wallet_obj))
+    wallet_chosen_menu_buttons.append(menu_button_withobj("send", send_chosen, wallet_obj))
+    wallet_chosen_menu_buttons.append(menu_button_withobj("search snapshots", send_chosen, wallet_obj))
+    wallet_chosen_menu_buttons.append(menu_button_withobj("instant exchange token in exin", send_chosen, wallet_obj))
+    wallet_chosen_menu_buttons.append(menu_button_withobj("ocean.one exchange", send_chosen, wallet_obj))
+    wallet_chosen_menu_buttons.append(menu_button_withobj("manage asset", manageasset_chosen, wallet_obj))
+    wallet_chosen_menu_buttons.append(menu_button_withobj("verify pin", verifypin_chosen, wallet_obj))
+    wallet_chosen_menu_buttons.append(menu_button_withobj("update pin", verifypin_chosen, wallet_obj))
+    wallet_chosen_menu_buttons.append(menu_button(u'Back', pop_current_menu))
 
-    top.open_box(menu(u'user id:' + wallet_obj.userid, menu_buttons))
+    top.open_box(menu(u'user id:' + wallet_obj.userid, wallet_chosen_menu_buttons))
 
 def item_chosen(button):
     response = urwid.Text([u'You chose ', button.label, u'\n'])
@@ -120,13 +140,16 @@ def item_chosen(button):
 
 def exit_program(button):
     raise urwid.ExitMainLoop()
+def pop_current_menu(button):
+    top.close_box()
 def load_wallet(button):
     wallet_records = wallet_api.load_wallet_csv_file('new_users.csv')
-    menu_buttons = []
+    load_wallet_menu_buttons = []
     for each_wallet in wallet_records:
-        menu_buttons.append(menu_button_withobj(each_wallet.userid, wallet_chosen, each_wallet))
+        load_wallet_menu_buttons.append(menu_button_withobj(each_wallet.userid, wallet_chosen, each_wallet))
 
-    top.open_box(menu("select wallet", menu_buttons))
+    load_wallet_menu_buttons.append(menu_button(u'Back', pop_current_menu))
+    top.open_box(menu("select wallet", load_wallet_menu_buttons))
 
 def create_wallet(button):
     raise urwid.ExitMainLoop()
@@ -163,6 +186,10 @@ class CascadingBoxes(urwid.WidgetPlaceholder):
             top=self.box_level * 2,
             bottom=(self.max_box_levels - self.box_level - 1) * 2)
         self.box_level += 1
+    def close_box(self):
+        if self.box_level > 1:
+            self.original_widget = self.original_widget[0]
+            self.box_level -= 1
 
     def keypress(self, size, key):
         if key == 'esc' and self.box_level > 1:
@@ -172,4 +199,4 @@ class CascadingBoxes(urwid.WidgetPlaceholder):
             return super(CascadingBoxes, self).keypress(size, key)
 
 top = CascadingBoxes(menu_top)
-urwid.MainLoop(top, palette=[('reversed', 'standout', '')]).run()
+urwid.MainLoop(top, palette=[('reversed', 'standout', '')], handle_mouse=False).run()
