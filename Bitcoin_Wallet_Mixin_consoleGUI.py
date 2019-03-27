@@ -45,15 +45,67 @@ def manageasset_chosen(button, wallet_obj):
 
 
 
-def send_chosen(button, wallet_obj):
+def show_content(button, wallet_asset_uuid_amount_pin_obj):
+    wallet_obj = wallet_asset_uuid_amount_pin_obj[0]
+    asset_obj  = wallet_asset_uuid_amount_pin_obj[1]
+    uuid_obj   = wallet_asset_uuid_amount_pin_obj[2]
+    amount_obj = wallet_asset_uuid_amount_pin_obj[3]
+    memo_obj   = wallet_asset_uuid_amount_pin_obj[4]
+    pin_obj    = wallet_asset_uuid_amount_pin_obj[5]
+    this_uuid  = ""
+
+    response = urwid.Text([asset_obj.asset_id , str(uuid_obj.get_edit_text()), str(amount_obj.get_edit_text()), str(memo_obj), str(pin_obj), str(this_uuid)])
+
+    done = menu_button(u'Ok', pop_current_menu)
+    top.open_box(urwid.Filler(urwid.Pile([response, done])))
+
+def send_confirm_chosen(button, wallet_asset_uuid_amount_pin_obj):
+    wallet_obj = wallet_asset_uuid_amount_pin_obj[0]
+    asset_obj  = wallet_asset_uuid_amount_pin_obj[1]
+    uuid_obj   = wallet_asset_uuid_amount_pin_obj[2]
+    amount_obj = wallet_asset_uuid_amount_pin_obj[3]
+    memo_obj   = wallet_asset_uuid_amount_pin_obj[4]
+    pin_obj    = wallet_asset_uuid_amount_pin_obj[5]
+    #let wallet create uuid for us
+    this_uuid  = ""
+
+    transfer_result = wallet_obj.transfer_to(uuid_obj, asset_obj.asset_id, amount_obj, memo_obj, this_uuid, pin_obj)
+    if(transfer_result != False):
+        response = urwid.Text(["your transaction is confirmed by Mixin Network with snapshot: %s, you can verify on browser:%s"%(transfer_result.snapshot_id, "https://mixin.one/snapshots/" + transfer_result.snapshot_id)])
+        done = menu_button(u'Ok', pop_current_menu)
+        top.open_box(urwid.Filler(urwid.Pile([response, done])))
+    else:
+        response = urwid.Text(["your transaction is failed"])
+        done = menu_button(u'Ok', pop_current_menu)
+        top.open_box(urwid.Filler(urwid.Pile([response, done])))
+
+def uuid_change(widget, text):
+    input_destination_uuid= text
+def memo_change(widget, text):
+    input_memo= text
+def amount_change(widget, text):
+    input_amount= text
+def pin_change(widget, text):
+    input_pin_code = text
+def send_chosen(button, wallet_asset_obj):
+
+    wallet_obj = wallet_asset_obj[0]
+    asset_obj  = wallet_asset_obj[1]
+
     menu_buttons = []
 
-    response = urwid.Text([u'', button.label, u'\n'])
-    menu_buttons.append(response)
-    done = menu_button(u'Ok', exit_program)
-    menu_buttons.append(done)
+    menu_buttons.append(destination_uuid_field)
+    menu_buttons.append(amount_field)
+    menu_buttons.append(memo_field)
+    menu_buttons.append(pin_code_field)
+    done = menu_button_withobj(u'Send', show_content, (wallet_obj, asset_obj, destination_uuid_field, amount_field, memo_field, pin_code_field))
+    #done = menu_button_withobj(u'Send', show_content, (wallet_obj, asset_obj, "12", "23", "memo", "pin"))
 
-    top.open_box(urwid.Filler(urwid.Pile(menu_buttons)))
+    back = menu_button(u'Back', pop_current_menu)
+    menu_buttons.append(done)
+    menu_buttons.append(back)
+
+    top.open_box(menu(u'Send ' + asset_obj.name, menu_buttons))
 
 
 
@@ -114,7 +166,7 @@ def asset_chosen(button, wallet_asset_obj):
     wallet_obj = wallet_asset_obj[0]
     asset_obj  = wallet_asset_obj[1]
     asset_chosen_menu_buttons = []
-    asset_chosen_menu_buttons.append(menu_button_withobj("send to mixin account", balance_send_to_mixin, wallet_asset_obj))
+    asset_chosen_menu_buttons.append(menu_button_withobj("send to mixin account", send_chosen, wallet_asset_obj))
     asset_chosen_menu_buttons.append(menu_button_withobj("deposit address", deposit_chosen, wallet_asset_obj))
     asset_chosen_menu_buttons.append(menu_button_withobj("recent transaction", send_chosen, wallet_obj))
     asset_chosen_menu_buttons.append(menu_button_withobj("manage withdraw contacts", manageasset_chosen, wallet_obj))
@@ -169,6 +221,19 @@ menu_top = menu(u'Mixin pywallet', [
     menu_button('exit', exit_program)
 ])
 
+input_destination_uuid= "uuid"
+input_pin_code  = "pin"
+input_amount = "amount"
+input_account_name = ""
+input_account_tag = ""
+input_address_tag = ""
+input_memo = "memo"
+destination_uuid_field = urwid.Edit(u'Destination uuid:\n')
+amount_field = urwid.Edit(u'Amount:\n')
+memo_field = urwid.Edit(u'Memo:\n')
+pin_code_field = urwid.Edit(u'pin:\n', mask=u"")
+
+
 class CascadingBoxes(urwid.WidgetPlaceholder):
     max_box_levels = 10
 
@@ -176,6 +241,12 @@ class CascadingBoxes(urwid.WidgetPlaceholder):
         super(CascadingBoxes, self).__init__(urwid.SolidFill(u'/'))
         self.box_level = 0
         self.open_box(box)
+        urwid.connect_signal(memo_field, 'change', memo_change)
+        urwid.connect_signal(destination_uuid_field, 'change', uuid_change)
+        urwid.connect_signal(amount_field, 'change', amount_change)
+        urwid.connect_signal(pin_code_field, 'change', pin_change)
+
+
 
     def open_box(self, box):
         self.original_widget = urwid.Overlay(urwid.LineBox(box),
