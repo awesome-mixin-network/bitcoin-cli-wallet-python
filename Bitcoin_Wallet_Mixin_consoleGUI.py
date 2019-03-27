@@ -68,7 +68,12 @@ def deposit_chosen(button, wallet_asset_obj):
 
     deposit_address_title_value_segments = asset_obj.deposit_address()
     for each_seg in deposit_address_title_value_segments:
-        deposit_chosen_menu_buttons.append(menu_button_withobj(("copy %s:%s"%(each_seg["title"], each_seg["value"])), copy_content_to_system_clip, each_seg["value"]))
+
+        response = urwid.Text([u'', each_seg["title"] + " : " + each_seg["value"]])
+        deposit_chosen_menu_buttons.append(response)
+        deposit_chosen_menu_buttons.append(urwid.Divider())
+
+        deposit_chosen_menu_buttons.append(menu_button_withobj(("copy %s"%(each_seg["title"])), copy_content_to_system_clip, each_seg["value"]))
 
 
     deposit_chosen_menu_buttons.append(menu_button(u'Back', pop_current_menu))
