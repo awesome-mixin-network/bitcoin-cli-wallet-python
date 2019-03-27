@@ -447,6 +447,9 @@ class MIXIN_API:
             "trace_id": trace_id,
             "memo": memo
         }
+        if trace_id == "":
+            body['trace_id'] = str(uuid.uuid1())
+
 
         return self.__genNetworkPostRequest('/withdrawals', body)
 

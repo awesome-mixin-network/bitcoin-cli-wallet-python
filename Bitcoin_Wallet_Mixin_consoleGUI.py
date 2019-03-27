@@ -33,6 +33,27 @@ def verifypin_chosen(button, wallet_obj):
     top.open_box(urwid.Filler(urwid.Pile(menu_buttons)))
 
 
+def withdraw_asset_chosen(button, wallet_asset_obj):
+    wallet_obj = wallet_asset_obj[0]
+    asset_obj  = wallet_asset_obj[1]
+
+
+    menu_buttons = []
+
+    withdraw_addresses = wallet_obj.get_asset_withdrawl_addresses(asset_obj.asset_id)
+    for each_withdraw_address in withdraw_addresses:
+        select_to_detail = menu_button_withobj(each_withdraw_address.label, show_withdraw_address_to_withdraw, (wallet_obj, asset_obj, each_withdraw_address))
+        menu_buttons.append(select_to_detail)
+
+
+    #done = menu_button_withobj(u'Send', show_content, (wallet_obj, asset_obj, "12", "23", "memo", "pin"))
+
+    back = menu_button(u'Back', pop_current_menu)
+    menu_buttons.append(back)
+
+    top.open_box(menu(u'Manage withdraw addresses for ' + asset_obj.name, menu_buttons))
+
+
 def manageasset_chosen(button, wallet_asset_obj):
     wallet_obj = wallet_asset_obj[0]
     asset_obj  = wallet_asset_obj[1]
@@ -95,6 +116,29 @@ def add_withdraw_address_confirm_chosen(button, wallet_asset_uuid_amount_pin_obj
         top.open_box(urwid.Filler(urwid.Pile([response, done])))
 
 
+def withdraw_asset_to_address_confirm_chosen(button, wallet_address_amount_pin_obj):
+    wallet_obj   = wallet_address_amount_pin_obj[0]
+    address_obj  = wallet_address_amount_pin_obj[1]
+
+    amount_obj   = wallet_address_amount_pin_obj[2]
+    memo_obj     = wallet_address_amount_pin_obj[3]
+    pin_obj      = wallet_address_amount_pin_obj[4]
+    this_uuid  = ""
+
+    withdraw_asset_to_address_result = wallet_obj.withdraw_asset_to(address_obj.address_id, amount_obj.get_edit_text(), memo_obj.get_edit_text(), this_uuid, pin_obj.get_edit_text())
+    if(withdraw_asset_to_address_result != False):
+        #pop_to_account_menu(button)
+        response = urwid.Text(["Your withdraw operation is successful, snapshot id is:", withdraw_asset_to_address_result.snapshot_id])
+        done = menu_button(u'Ok', pop_to_account_menu)
+        top.open_box(urwid.Filler(urwid.Pile([response, done])))
+
+    else:
+        response = urwid.Text(["Your withdraw asset operation is failed"])
+        done = menu_button(u'Ok', pop_to_account_menu)
+        top.open_box(urwid.Filler(urwid.Pile([response, done])))
+
+
+
 def remove_withdraw_address_confirm_chosen(button, wallet_asset_uuid_amount_pin_obj):
     wallet_obj = wallet_asset_uuid_amount_pin_obj[0]
     address_obj  = wallet_asset_uuid_amount_pin_obj[1]
@@ -145,7 +189,7 @@ def send_chosen(button, wallet_asset_obj):
     exe_destination_uuid_field = urwid.Edit(u'Destination uuid:\n')
     exe_amount_field = urwid.Edit(u'Amount:\n')
     exe_memo_field = urwid.Edit(u'Memo:\n')
-    exe_pin_code_field = urwid.Edit(u'pin:\n', mask=u"")
+    exe_pin_code_field = urwid.Edit(u'pin:\n', mask=u"*")
 
 
 
@@ -223,7 +267,7 @@ def remove_withdraw_address_chosen(button, wallet_asset_obj):
 
     menu_buttons = []
 
-    exe_pin_code_field = urwid.Edit(u'pin:\n', mask=u"")
+    exe_pin_code_field = urwid.Edit(u'pin:\n', mask=u"*")
     menu_buttons.append(exe_pin_code_field)
 
     done = menu_button_withobj(u'Remove', remove_withdraw_address_confirm_chosen, (wallet_obj, address_obj, exe_pin_code_field))
@@ -234,6 +278,58 @@ def remove_withdraw_address_chosen(button, wallet_asset_obj):
     menu_buttons.append(back)
 
     top.open_box(menu(u'Remove address' + address_obj.label, menu_buttons))
+def withdraw_asset_to_address_chosen(button, wallet_asset_address_obj):
+
+    wallet_obj  = wallet_asset_address_obj[0]
+
+    asset_obj   = wallet_asset_address_obj[1]
+    address_obj = wallet_asset_address_obj[2]
+
+    menu_buttons = []
+    withdraw_amount_field = urwid.Edit(u'Amount:\n')
+    menu_buttons.append(withdraw_amount_field)
+
+    withdraw_memo_field = urwid.Edit(u'Memo:\n')
+    menu_buttons.append(withdraw_memo_field)
+    withdraw_pin_code_field = urwid.Edit(u'pin:\n', mask=u"*")
+    menu_buttons.append(withdraw_pin_code_field)
+
+    done = menu_button_withobj(u'Withdraw', withdraw_asset_to_address_confirm_chosen, (wallet_obj, address_obj, withdraw_amount_field, withdraw_memo_field, withdraw_pin_code_field))
+
+    back = menu_button(u'Back', pop_current_menu)
+    menu_buttons.append(done)
+    menu_buttons.append(back)
+
+    top.open_box(menu(u'Remove address' + address_obj.label, menu_buttons))
+
+
+def show_withdraw_address_to_withdraw(button, wallet_asset_address_obj):
+    address_obj = wallet_asset_address_obj[2]
+
+    menu_buttons = []
+
+    if(address_obj.label != ""):
+        menu_buttons.append(urwid.Text([u'Label:'.ljust(20), address_obj.label]))
+    if(address_obj.public_key!= ""):
+        menu_buttons.append(urwid.Text([u'Deposit address:'.ljust(20), address_obj.public_key]))
+    if(address_obj.account_name!= ""):
+        menu_buttons.append(urwid.Text([u'Account name:'.ljust(20), address_obj.account_name]))
+    if(address_obj.account_tag!= ""):
+        menu_buttons.append(urwid.Text([u'Account tag:'.ljust(20), address_obj.account_tag]))
+    if(address_obj.fee!= ""):
+        menu_buttons.append(urwid.Text([u'fee:'.ljust(20), address_obj.fee]))
+    if(address_obj.reserve != ""):
+        menu_buttons.append(urwid.Text([u'reserve:'.ljust(20), address_obj.reserve]))
+    if(address_obj.dust!= ""):
+        menu_buttons.append(urwid.Text([u'dust:'.ljust(20), address_obj.dust]))
+
+
+    done = menu_button(u'Back', pop_current_menu)
+    menu_buttons.append(done)
+    remove = menu_button_withobj(u'Withdraw to this address', withdraw_asset_to_address_chosen, wallet_asset_address_obj)
+    menu_buttons.append(remove)
+
+    top.open_box(menu(u'Withdraw address detail', menu_buttons))
 
 
 def show_withdraw_address_remove(button, wallet_asset_obj):
@@ -273,7 +369,7 @@ def add_withdraw_address_eos_style(button, to_copy_content):
 
     deposit_address_field = urwid.Edit(u'Deposit address:\n')
     label_field = urwid.Edit(u'Account label:\n')
-    pin_code_field = urwid.Edit(u'pin:\n', mask=u"")
+    pin_code_field = urwid.Edit(u'pin:\n', mask=u"*")
 
 
     menu_buttons.append(deposit_address_field)
@@ -297,7 +393,7 @@ def add_withdraw_address_bitcoin_style(button, wallet_asset_obj):
 
     deposit_address_field = urwid.Edit(u'Deposit address:\n')
     label_field = urwid.Edit(u'Account label:\n')
-    pin_code_field = urwid.Edit(u'pin:\n', mask=u"")
+    pin_code_field = urwid.Edit(u'pin:\n', mask=u"*")
 
 
     menu_buttons.append(deposit_address_field)
@@ -320,6 +416,8 @@ def asset_chosen(button, wallet_asset_obj):
     asset_chosen_menu_buttons.append(menu_button_withobj("deposit address", deposit_chosen, wallet_asset_obj))
     asset_chosen_menu_buttons.append(menu_button_withobj("recent transaction", send_chosen, wallet_obj)) 
     asset_chosen_menu_buttons.append(menu_button_withobj("manage withdraw contacts", manageasset_chosen, wallet_asset_obj))
+    asset_chosen_menu_buttons.append(menu_button_withobj("withdraw to other address", withdraw_asset_chosen, wallet_asset_obj))
+
     asset_chosen_menu_buttons.append(menu_button(u'Back', pop_current_menu))
 
     top.open_box(menu(asset_obj.name.ljust(15)+":"+ asset_obj.balance, asset_chosen_menu_buttons))

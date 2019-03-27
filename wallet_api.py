@@ -76,6 +76,16 @@ class Asset(Static_Asset):
             result_desposit.append({"title":"account_tag", "value":self.account_tag})
         return result_desposit
 
+class Withdrawal():
+    def __init__(self, jsonInput):
+        self.snapshot_id = jsonInput.get("snapshot_id")
+        self.transaction_hash = jsonInput.get("transaction_hash")
+        self.asset_id = jsonInput.get("asset_id")
+        self.amount = jsonInput.get("amount")
+        self.trace_id = jsonInput.get("trace_id")
+        self.memo = jsonInput.get("memo")
+        self.created_at = jsonInput.get("created_at")
+
 class Address():
     def __init__(self, jsonInput):
         self.address_id   = jsonInput.get("address_id")
@@ -142,8 +152,10 @@ class WalletRecord():
             return Transfer(transfer_result_json.get("data"))
 
         return False
-
-
+    def withdraw_asset_to(self, address_id, withdraw_amount, withdraw_memo, withdraw_this_uuid, withdraw_asset_pin):
+        asset_withdraw_result_json = self.mixinAPIInstance.withdrawals(address_id, withdraw_amount, withdraw_memo, withdraw_this_uuid, withdraw_asset_pin)
+        withdraw_result = Withdrawal(asset_withdraw_result_json.get("data"))
+        return withdraw_result
 
 def append_wallet_into_csv_file(this_wallet, file_name):
     with open(file_name, 'a', newline='') as csvfile:
