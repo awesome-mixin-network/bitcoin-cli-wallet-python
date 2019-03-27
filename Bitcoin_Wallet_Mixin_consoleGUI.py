@@ -54,7 +54,7 @@ def show_content(button, wallet_asset_uuid_amount_pin_obj):
     pin_obj    = wallet_asset_uuid_amount_pin_obj[5]
     this_uuid  = ""
 
-    response = urwid.Text([asset_obj.asset_id , str(uuid_obj.get_edit_text()), str(amount_obj.get_edit_text()), str(memo_obj), str(pin_obj), str(this_uuid)])
+    response = urwid.Text([asset_obj.asset_id , uuid_obj.get_edit_text(), amount_obj.get_edit_text(), memo_obj.get_edit_text(), pin_obj.get_edit_text(), this_uuid])
 
     done = menu_button(u'Ok', pop_current_menu)
     top.open_box(urwid.Filler(urwid.Pile([response, done])))
@@ -94,11 +94,19 @@ def send_chosen(button, wallet_asset_obj):
 
     menu_buttons = []
 
-    menu_buttons.append(destination_uuid_field)
-    menu_buttons.append(amount_field)
-    menu_buttons.append(memo_field)
-    menu_buttons.append(pin_code_field)
-    done = menu_button_withobj(u'Send', show_content, (wallet_obj, asset_obj, destination_uuid_field, amount_field, memo_field, pin_code_field))
+    exe_destination_uuid_field = urwid.Edit(u'Destination uuid:\n')
+    exe_amount_field = urwid.Edit(u'Amount:\n')
+    exe_memo_field = urwid.Edit(u'Memo:\n')
+    exe_pin_code_field = urwid.Edit(u'pin:\n', mask=u"")
+
+
+
+
+    menu_buttons.append(exe_destination_uuid_field)
+    menu_buttons.append(exe_amount_field)
+    menu_buttons.append(exe_memo_field)
+    menu_buttons.append(exe_pin_code_field)
+    done = menu_button_withobj(u'Send', show_content, (wallet_obj, asset_obj, exe_destination_uuid_field, exe_amount_field, exe_memo_field, exe_pin_code_field))
     #done = menu_button_withobj(u'Send', show_content, (wallet_obj, asset_obj, "12", "23", "memo", "pin"))
 
     back = menu_button(u'Back', pop_current_menu)
@@ -229,9 +237,6 @@ input_account_tag = ""
 input_address_tag = ""
 input_memo = "memo"
 destination_uuid_field = urwid.Edit(u'Destination uuid:\n')
-amount_field = urwid.Edit(u'Amount:\n')
-memo_field = urwid.Edit(u'Memo:\n')
-pin_code_field = urwid.Edit(u'pin:\n', mask=u"")
 
 
 class CascadingBoxes(urwid.WidgetPlaceholder):
@@ -241,12 +246,6 @@ class CascadingBoxes(urwid.WidgetPlaceholder):
         super(CascadingBoxes, self).__init__(urwid.SolidFill(u'/'))
         self.box_level = 0
         self.open_box(box)
-        urwid.connect_signal(memo_field, 'change', memo_change)
-        urwid.connect_signal(destination_uuid_field, 'change', uuid_change)
-        urwid.connect_signal(amount_field, 'change', amount_change)
-        urwid.connect_signal(pin_code_field, 'change', pin_change)
-
-
 
     def open_box(self, box):
         self.original_widget = urwid.Overlay(urwid.LineBox(box),
