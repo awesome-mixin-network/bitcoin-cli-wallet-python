@@ -208,32 +208,6 @@ def explainData(inputJsonData):
             return result
 
 
-def withdraw_asset(withdraw_asset_id, withdraw_asset_name, mixinAccountInstance):
-    this_asset_balance = asset_balance(mixinAccountInstance, withdraw_asset_id)
-    withdraw_amount = input("%s %s in your account, how many %s you want to withdraw: "%(withdraw_asset_name, this_asset_balance, withdraw_asset_name))
-    withdraw_addresses_result = mixinAccountInstance.withdrawals_address(withdraw_asset_id)
-    withdraw_addresses = withdraw_addresses_result.get("data")
-    i = 0
-    print("current " + withdraw_asset_name +" address:=======")
-    for eachAddress in withdraw_addresses:
-        Address = "index %d: %s"%(i, strPresent_of_asset_withdrawaddress(eachAddress, withdraw_asset_id))
-        print(Address)
-        i = i + 1
-
-    userselect = input("which address index is your destination")
-    if (int(userselect) < i):
-        eachAddress = withdraw_addresses[int(userselect)]
-        address_id = eachAddress.get("address_id")
-        address_pubkey = eachAddress.get("public_key")
-        address_selected = "index %d: %s"%(int(userselect), strPresent_of_asset_withdrawaddress(eachAddress, withdraw_asset_id))
-        confirm = input("Type YES and press enter key to withdraw " + withdraw_amount + withdraw_asset_name + " to " + address_selected + "!!:")
-        if (confirm == "YES"):
-            this_uuid = str(uuid.uuid1())
-            asset_pin = getpass.getpass("pin:")
-            asset_withdraw_result = mixinAccountInstance.withdrawals(address_id, withdraw_amount, "withdraw2"+address_pubkey, this_uuid, asset_pin)
-            return asset_withdraw_result
-    return None
-
 
 def loadSnapshots(UserInstance, timestamp, asset_id = ""):
     snapshots_result_of_account = UserInstance.account_snapshots_after(timestamp, asset_id = asset_id, limit = 500)
@@ -433,9 +407,9 @@ while ( 1 > 0 ):
                         if (confirm == "YES"):
                             this_uuid = str(uuid.uuid1())
                             asset_pin = getpass.getpass("pin:")
-                            asset_withdraw_result = mixinApiNewUserInstance.withdrawals(address_id, withdraw_amount, "withdraw2"+address_pubkey, this_uuid, asset_pin)
-                            if (asset_withdraw_result != None):
-                                print(asset_withdraw_result)
+                            asset_withdraw_result = mixinWalletInstance.withdraw_asset_to(address_id, withdraw_amount, "withdraw2"+address_pubkey, this_uuid, asset_pin)
+                            if(asset_withdraw_result != False):
+                                print("Your withdraw is successful , snapshot id: %s"%asset_withdraw_result.snapshot_id)
 
         else:
             print("no available asset to send")
