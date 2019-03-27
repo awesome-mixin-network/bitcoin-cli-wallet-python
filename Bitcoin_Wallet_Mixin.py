@@ -100,15 +100,11 @@ def usdt_balance_of(mixinApiInstance):
     return asset_balance(USDT_ASSET_ID)
 
 def strPresent_of_depositAddress_from(AssetData):
-    this_chain_id = AssetData.get("chain_id")
-    if( this_chain_id == EOS_ASSET_ID):
-        address_accountname = AssetData.get("account_name")
-        address_accounttag= AssetData.get("account_tag")
-        return "account: %s; memo: %s"%(address_accountname, address_accounttag)
-    else:
-        address_public = AssetData.get("public_key")
-        return "%s"%address_public
 
+    result_string = ""
+    for eachSeg in AssetData.deposit_address():
+        result_string += (" %s: %s | "%(eachSeg["title"], eachSeg["value"]))
+    return result_string
 def strPresent_of_asset_withdrawaddress(thisAddress, asset_id, prefix = " "* 4):
     address_id = thisAddress.get("address_id")
     address_pubkey = thisAddress.get("public_key")
@@ -361,18 +357,18 @@ while ( 1 > 0 ):
         print("===========")
     if (cmd == "deposit"):
 
-        all_asset = mixinApiNewUserInstance.getMyAssets()
+        all_assets = mixinWalletInstance.get_balance()
+
         asset_id_groups_in_myassets = []
         print("Your asset deposit address \n===========")
 
-        for eachAsset in all_asset:
-            print("%s: %s" %(eachAsset.get("name").ljust(15), strPresent_of_depositAddress_from(eachAsset)))
-            asset_id_groups_in_myassets.append(eachAsset.get("asset_id"))
+        for eachAsset in all_assets:
+            print("%s: %s" %(eachAsset.name.ljust(15), strPresent_of_depositAddress_from(eachAsset)))
+            asset_id_groups_in_myassets.append(eachAsset.asset_id)
         for eachAssetID in MIXIN_DEFAULT_CHAIN_GROUP:
             if ( not (eachAssetID in asset_id_groups_in_myassets)):
-                eachAssetJson = mixinApiNewUserInstance.getAsset(eachAssetID).get("data")
-                wallet_api.asset(eachAssetJson)
-                print("%s: %s" %(eachAsset.name.ljust(15), strPresent_of_depositAddress_from(eachAssetJson)))
+                this_asset = mixinWalletInstance.get_singleasset_balance(eachAssetID)
+                print("%s: %s" %(this_asset.name.ljust(15), strPresent_of_depositAddress_from(this_asset)))
         print("===========")
 
     if (cmd == "send"):

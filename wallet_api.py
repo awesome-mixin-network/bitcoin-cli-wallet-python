@@ -55,9 +55,19 @@ class Asset():
         self.chain_id = jsonInput.get("chain_id")
         self.balance  = jsonInput.get("balance")
         self.symbol   = jsonInput.get("symbol")
-        self.pubkey   = jsonInput.get("public_key")
+        self.public_key   = jsonInput.get("public_key")
         self.account_name = jsonInput.get("account_name")
         self.account_tag  = jsonInput.get("account_tag")
+    def deposit_address(self):
+        result_desposit = []
+        if(self.public_key != ""):
+            result_desposit.append({"title":"public_key", "value":self.public_key})
+        if(self.account_name!= ""):
+            result_desposit.append({"title":"account_name", "value":self.account_name})
+        if(self.account_tag!= ""):
+            result_desposit.append({"title":"account_tag", "value":self.account_tag})
+        return result_desposit
+
 
 class WalletRecord():
     def __init__(self, pin, userid, session_id, pin_token, private_key):
@@ -78,9 +88,9 @@ class WalletRecord():
             all_assets.append(Asset(eachJson))
 
         return all_assets
-
-
-
+    def get_singleasset_balance(self, input_asset_id):
+        single_asset_json = self.mixinAPIInstance.getAsset(input_asset_id)
+        return Asset(single_asset_json)
 
 
 def append_wallet_into_csv_file(this_wallet, file_name):
