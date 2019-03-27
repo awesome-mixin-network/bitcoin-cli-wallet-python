@@ -69,7 +69,7 @@ def send_confirm_chosen(button, wallet_asset_uuid_amount_pin_obj):
     #let wallet create uuid for us
     this_uuid  = ""
 
-    transfer_result = wallet_obj.transfer_to(uuid_obj, asset_obj.asset_id, amount_obj, memo_obj, this_uuid, pin_obj)
+    transfer_result = wallet_obj.transfer_to(uuid_obj.get_edit_text(), asset_obj.asset_id, amount_obj.get_edit_text(), memo_obj.get_edit_text(), this_uuid, pin_obj.get_edit_text())
     if(transfer_result != False):
         response = urwid.Text(["your transaction is confirmed by Mixin Network with snapshot: %s, you can verify on browser:%s"%(transfer_result.snapshot_id, "https://mixin.one/snapshots/" + transfer_result.snapshot_id)])
         done = menu_button(u'Ok', pop_current_menu)
@@ -98,7 +98,7 @@ def send_chosen(button, wallet_asset_obj):
     menu_buttons.append(exe_amount_field)
     menu_buttons.append(exe_memo_field)
     menu_buttons.append(exe_pin_code_field)
-    done = menu_button_withobj(u'Send', show_content, (wallet_obj, asset_obj, exe_destination_uuid_field, exe_amount_field, exe_memo_field, exe_pin_code_field))
+    done = menu_button_withobj(u'Send', send_confirm_chosen, (wallet_obj, asset_obj, exe_destination_uuid_field, exe_amount_field, exe_memo_field, exe_pin_code_field))
     #done = menu_button_withobj(u'Send', show_content, (wallet_obj, asset_obj, "12", "23", "memo", "pin"))
 
     back = menu_button(u'Back', pop_current_menu)
