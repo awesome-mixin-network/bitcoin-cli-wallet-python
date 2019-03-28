@@ -274,15 +274,21 @@ class WalletRecord():
         update_pin_result_json = self.mixinAPIInstance.updatePin(input_new_pin, input_old_pin)
         user_result = User_result(update_pin_result_json)
         return user_result
-    def my_snapshots_after(self, timestamp, asset_id = "", limit = 500):
-        snapshots_json = self.mixinAPIInstance.account_snapshots_after(timestamp, asset_id, limit)
-        snapshots_result = []
-        for eachJson in snapshots_json:
-            snapshots_result.append(Snapshot(eachJson))
+    def my_snapshots_after(self, timestamp, asset_id = "", limit = 500, retry = 10):
+        counter = 0
         mysnapshots_result = []
-        for singleSnapShot in snapshots_result:
-            if (singleSnapShot.is_my_snap()):
-                mysnapshots_result.append(singleSnapShot)
+        last_time = timestamp
+        while((len(mysnapshots_result) < limit ) and (counter < retry)):
+            counter += 1
+            snapshots_json = self.mixinAPIInstance.account_snapshots_after(last_time, asset_id, 500)
+
+            snapshots_result = []
+            for eachJson in snapshots_json:
+                snapshots_result.append(Snapshot(eachJson))
+            last_time = snapshots_result[-1].created_at
+            for singleSnapShot in snapshots_result:
+                if (singleSnapShot.is_my_snap()):
+                    mysnapshots_result.append(singleSnapShot)
         return mysnapshots_result
 
 
