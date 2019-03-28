@@ -86,6 +86,42 @@ class Withdrawal():
         self.memo = jsonInput.get("memo")
         self.created_at = jsonInput.get("created_at")
 
+
+class Snapshot():
+    def __init__(self, jsonInput):
+
+        self.amount = jsonInput.get("amount")
+        self.type = jsonInput.get("type")
+        self.asset = Static_Asset(jsonInput.get("asset"))
+        self.created_at = jsonInput.get("created_at")
+        self.memo = jsonInput.get("data")
+        self.snapshot_id = jsonInput.get("snapshot_id")
+        self.source = jsonInput.get("source")
+        self.user_id = jsonInput.get("user_id")
+        self.trace_id = jsonInput.get("trace_id")
+        self.opponent_id = jsonInput.get("opponent_id")
+    def __str__(self):
+        string_result = ""
+        string_result += (self.amount.ljust(15))
+        string_result += (" " + self.asset.symbol.ljust(10))
+        string_result += " created at:" + self.created_at.ljust(30)
+        if self.user_id != None:
+            string_result += (" from " + self.user_id)
+        if self.opponent_id != None:
+            string_result += (" to " + self.opponent_id)
+        if (self.trace_id != None):
+            string_result += (" trace id:" + self.trace_id)
+        if (self.memo != None):
+            string_result += (" memo:" + self.memo)
+        return string_result
+
+    def is_sent(self):
+        return float(self.amount) < 0
+    def is_received(self):
+        return float(self.amount) > 0
+    def is_my_snap(self):
+        return self.user_id != None
+
 class Address():
     def __init__(self, jsonInput):
         self.address_id   = jsonInput.get("address_id")
@@ -238,7 +274,24 @@ class WalletRecord():
         update_pin_result_json = self.mixinAPIInstance.updatePin(input_new_pin, input_old_pin)
         user_result = User_result(update_pin_result_json)
         return user_result
+    def my_snapshots_after(self, timestamp, asset_id = "", limit = 500):
+        snapshots_json = self.mixinAPIInstance.account_snapshots_after(timestamp, asset_id, limit)
+        snapshots_result = []
+        for eachJson in snapshots_json:
+            snapshots_result.append(Snapshot(eachJson))
+        mysnapshots_result = []
+        for singleSnapShot in snapshots_result:
+            if (singleSnapShot.is_my_snap()):
+                mysnapshots_result.append(singleSnapShot)
+        return mysnapshots_result
 
+
+def find_snapshot_of(client_id, in_snapshots):
+    mysnapshots_result = []
+    for singleSnapShot in in_snapshots:
+        if (singleSnapShot.user_id == client_id):
+            mysnapshots_result.append(singleSnapShot)
+    return mysnapshots_result
 
 def append_wallet_into_csv_file(this_wallet, file_name):
     with open(file_name, 'a', newline='') as csvfile:

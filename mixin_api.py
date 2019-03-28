@@ -650,10 +650,4 @@ class MIXIN_API:
     def account_snapshots_after(self, offset, asset_id, limit=100):
         return self.account_snapshots(offset, asset_id, order = "ASC", limit = limit)
 
-    def find_mysnapshot_in(self, in_snapshots):
-        mysnapshots_result = []
-        for singleSnapShot in in_snapshots:
-            if "user_id" in singleSnapShot and (singleSnapShot.get("user_id") == self.client_id):
-                mysnapshots_result.append(singleSnapShot)
-        return mysnapshots_result
 
