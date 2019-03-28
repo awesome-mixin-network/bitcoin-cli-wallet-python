@@ -379,13 +379,13 @@ while ( 1 > 0 ):
                     destination_uuid = input("destination uuid:")
                     amount_tosend     = input("quantity(%s remain):"%selected_asset.balance)
                     memo_input = input("memo:")
-                    asset_pin_input = input("pin code:")
+                    asset_pin_input = getpass.getpass("pin code:")
                     this_uuid = str(uuid.uuid1())
                     user_confirm = input("Type YES and press enter key to confirm: send %s %s to %s , memo:%s, trace id: %s:"%(amount_tosend, selected_asset.name, destination_uuid, memo_input, this_uuid))
                     if (user_confirm == "YES"):
                         transfer_result = mixinWalletInstance.transfer_to(destination_uuid, selected_asset.asset_id, amount_tosend, memo_input, this_uuid, asset_pin_input)
                         if(transfer_result != False):
-                            print("your transaction is confirmed by Mixin Network with snapshot: %s, you can verify on browser:%s"%(transfer_result.snapshot_id, "https://mixin.one/snapshots/" + transfer_result.snapshot_id))
+                            print(transfer_result)
                 if (address_type == "1"):
                     withdraw_addresses = mixinWalletInstance.get_asset_withdrawl_addresses(selected_asset.asset_id)
                     i = 0
@@ -640,8 +640,7 @@ while ( 1 > 0 ):
 
     if ( cmd == 'verifypin' ):
         input_pin = getpass.getpass("input your account pin:")
-        userInfo = mixinApiNewUserInstance.verifyPin(input_pin)
-        mixin_account_name = userInfo.get("data").get("full_name")
+        userInfo = mixinWalletInstance.verify_pin(input_pin)
         print(userInfo)
 
     if ( cmd == 'updatepin' ):

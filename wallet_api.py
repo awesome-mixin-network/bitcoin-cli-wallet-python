@@ -116,20 +116,75 @@ class Address():
         return Address
 
 
-
-class Transfer():
+class User_result():
     def __init__(self, jsonInput):
-        self.amount       = jsonInput.get("amount")
-        self.memo         = jsonInput.get("memo")
-        self.snapshot_id  = jsonInput.get("snapshot_id")
+        if ("error" in jsonInput):
+            self.is_success = False
+            error_dict       = jsonInput.get("error")
+            self.status      = error_dict.get("status")
+            self.code        = error_dict.get("code")
+            self.description = error_dict.get("description")
+        else:
+            self.is_success = True
+            data_dict       = jsonInput.get("data")
+            self.user_id    = data_dict.get("user_id")
+            self.full_name  = data_dict.get("full_name")
+            
+            self.has_pin    = data_dict.get("has_pin")
+            self.type       = data_dict.get("type")
+            self.created_at = data_dict.get("created_at")
+            self.session_id = data_dict.get("session_id")
+            
+    def __str__(self):
+        """Format: Name on the first line
+        and all grades on the second line,
+        separated by spaces.
+        """
+        result = "" 
+        if (self.is_success):
+            result += self.full_name + " is created at " + self.created_at + " with user id:" + self.user_id
+            if self.has_pin:
+                result += ". Pin is created"
+            else:
+                result += ". wallet need to create pin"
+        else:
+            result += "Failed to verify :%s, status: %s code: %s"%(self.description, self.status, self.code)
+        return result
 
-        self.asset_id     = jsonInput.get("asset_id")
-        self.type         = jsonInput.get("type")
-        self.trace_id     = jsonInput.get("trace_id")
-        self.opponent_id  = jsonInput.get("opponent_id")
+class Transfer_result():
+    def __init__(self, jsonInput):
+        if ("error" in jsonInput):
+            self.is_success = False
+            error_dict       = jsonInput.get("error")
+            self.status      = error_dict.get("status")
+            self.code        = error_dict.get("code")
+            self.description = error_dict.get("description")
+        else:
+            self.is_success = True
 
+            data_dict         = jsonInput.get("data")
+            self.amount       = data_dict.get("amount")
+            self.memo         = data_dict.get("memo")
+            self.snapshot_id  = data_dict.get("snapshot_id")
+            
+            self.asset_id     = data_dict.get("asset_id")
+            self.type         = data_dict.get("type")
+            self.trace_id     = data_dict.get("trace_id")
+            self.opponent_id  = data_dict.get("opponent_id")
+            self.created_at   = data_dict.get("created_at")
+            
+    def __str__(self):
+        """Format: Name on the first line
+        and all grades on the second line,
+        separated by spaces.
+        """
+        result = "" 
+        if (self.is_success):
+            result += "Successfully transfer %s %s to %s at %s with trace id:%s, snapshot id:%s"%(self.amount, self.asset_id, self.opponent_id, self.created_at, self.trace_id, self.snapshot_id)
+        else:
 
-
+            result += "Failed to transfer due to :%s, status: %s code: %s"%(self.description, self.status, self.code)
+        return result
 class WalletRecord():
     def __init__(self, pin, userid, session_id, pin_token, private_key):
        self.pin = pin
@@ -167,13 +222,18 @@ class WalletRecord():
     def transfer_to(self, destination_uuid, asset_id, amount_tosend, memo_input, this_uuid, asset_pin_input):
         transfer_result_json = self.mixinAPIInstance.transferTo(destination_uuid, asset_id, amount_tosend, memo_input, this_uuid, asset_pin_input)
         if(transfer_result_json != False):
-            return Transfer(transfer_result_json.get("data"))
+            return Transfer_result(transfer_result_json)
 
-        return False
+        print(transfer_result_json)
     def withdraw_asset_to(self, address_id, withdraw_amount, withdraw_memo, withdraw_this_uuid, withdraw_asset_pin):
         asset_withdraw_result_json = self.mixinAPIInstance.withdrawals(address_id, withdraw_amount, withdraw_memo, withdraw_this_uuid, withdraw_asset_pin)
         withdraw_result = Withdrawal(asset_withdraw_result_json.get("data"))
         return withdraw_result
+    def verify_pin(self, input_pin):
+        verify_pin_result_json = self.mixinAPIInstance.verifyPin(input_pin)
+        user_result = User_result(verify_pin_result_json)
+        return user_result
+
 
 def append_wallet_into_csv_file(this_wallet, file_name):
     with open(file_name, 'a', newline='') as csvfile:
