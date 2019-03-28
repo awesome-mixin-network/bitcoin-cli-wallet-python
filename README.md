@@ -1,4 +1,4 @@
-# CLI/API Bitcoin/USDT/Zcash wallet written in python script based on Mixin Network
+# CLI/API Bitcoin and alter coin wallet written in python script based
 ![cover](https://github.com/wenewzhang/mixin_labs-python-bot/raw/master/Bitcoin_python.jpg)
 This a command line bitcoin/altcoin wallet written in python script based on Mixin Network. It is a cold wallet based on Mixin Network, so no one can steal your Bitcoin. If someone managed to copy private file in your PC, they can not steal your asset if they don't know the asset pin. 
 
