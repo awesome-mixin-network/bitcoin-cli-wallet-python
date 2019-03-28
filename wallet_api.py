@@ -98,7 +98,7 @@ class Address():
         self.reserve      = jsonInput.get("reserve")
         self.dust         = jsonInput.get("dust")
         self.updated_at   = jsonInput.get("updated_at")
-    def strPresent_of_depositAddress_from(self, prefix =""):
+    def strPresent_of_withdraw_address(self, prefix =""):
         Address  = "\n"
         if self.label != "":
             Address += prefix + "tag          : %s\n"%self.label

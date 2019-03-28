@@ -300,7 +300,7 @@ def withdraw_asset_to_address_chosen(button, wallet_asset_address_obj):
     menu_buttons.append(done)
     menu_buttons.append(back)
 
-    top.open_box(menu(u'Withdraw asset to ' + address_obj.strPresent_of_depositAddress_from(), menu_buttons))
+    top.open_box(menu(u'Withdraw asset to ' + address_obj.strPresent_of_withdraw_address(), menu_buttons))
 
 
 
