@@ -438,24 +438,23 @@ while ( 1 > 0 ):
 
 # c6d0c728-2624-429b-8e0d-d9d19b6592fa
     if ( cmd == 'allmoney' ):
-        AssetsInfo = mixinApiNewUserInstance.getMyAssets()
+        AssetsInfo = mixinWalletInstance.get_balance()
         availableAssset = []
         my_pin = getpass.getpass("pin:")
         for eachAssetInfo in AssetsInfo: 
-            if (eachAssetInfo.get("balance") == "0"):
+            if (eachAssetInfo.balance == "0"):
                 continue
-            if (float(eachAssetInfo.get("balance")) > 0):
+            if (float(eachAssetInfo.balance) > 0):
                 availableAssset.append(eachAssetInfo)
-                print("You have : " + eachAssetInfo.get("balance") + eachAssetInfo.get("name"))
+                print("You have : " + eachAssetInfo.balance + eachAssetInfo.name)
                 this_uuid = str(uuid.uuid1())
                 print("uuid is: " + this_uuid)
-                confirm_pay= input("type YES to pay " + eachAssetInfo.get("balance")+ " to MASTER:")
+                confirm_pay= input("type YES to pay " + eachAssetInfo.balance+ " to MASTER:")
                 if ( confirm_pay== "YES" ):
-                    transfer_result = mixinApiNewUserInstance.transferTo(MASTER_UUID, eachAssetInfo.get("asset_id"), eachAssetInfo.get("balance"), "", this_uuid, my_pin)
+                    transfer_result = mixinWalletInstance.transfer_to(MASTER_UUID, eachAssetInfo.asset_id, eachAssetInfo.balance, "", this_uuid, my_pin)
                     if(transfer_result != False):
-                        snapShotID = transfer_result.get("data").get("snapshot_id")
-                        created_at = transfer_result.get("data").get("created_at")
-                        print(created_at + ":Pay BTC to Master ID with trace id:" + this_uuid + ", you can verify the result on https://mixin.one/snapshots/" + snapShotID)
+                        print(transfer_result)
+
     if ( cmd == 'manageassets' ):
         all_asset = mixinWalletInstance.get_balance()
         asset_id_groups_in_myassets = []
