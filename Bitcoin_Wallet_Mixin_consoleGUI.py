@@ -42,7 +42,7 @@ def withdraw_asset_chosen(button, wallet_asset_obj):
 
     withdraw_addresses = wallet_obj.get_asset_withdrawl_addresses(asset_obj.asset_id)
     for each_withdraw_address in withdraw_addresses:
-        select_to_detail = menu_button_withobj(each_withdraw_address.label, show_withdraw_address_to_withdraw, (wallet_obj, asset_obj, each_withdraw_address))
+        select_to_detail = menu_button_withobj(each_withdraw_address.label, withdraw_asset_to_address_chosen, (wallet_obj, asset_obj, each_withdraw_address))
         menu_buttons.append(select_to_detail)
 
 
@@ -300,36 +300,8 @@ def withdraw_asset_to_address_chosen(button, wallet_asset_address_obj):
     menu_buttons.append(done)
     menu_buttons.append(back)
 
-    top.open_box(menu(u'Remove address' + address_obj.label, menu_buttons))
+    top.open_box(menu(u'Withdraw asset to ' + address_obj.strPresent_of_depositAddress_from(), menu_buttons))
 
-
-def show_withdraw_address_to_withdraw(button, wallet_asset_address_obj):
-    address_obj = wallet_asset_address_obj[2]
-
-    menu_buttons = []
-
-    if(address_obj.label != ""):
-        menu_buttons.append(urwid.Text([u'Label:'.ljust(20), address_obj.label]))
-    if(address_obj.public_key!= ""):
-        menu_buttons.append(urwid.Text([u'Deposit address:'.ljust(20), address_obj.public_key]))
-    if(address_obj.account_name!= ""):
-        menu_buttons.append(urwid.Text([u'Account name:'.ljust(20), address_obj.account_name]))
-    if(address_obj.account_tag!= ""):
-        menu_buttons.append(urwid.Text([u'Account tag:'.ljust(20), address_obj.account_tag]))
-    if(address_obj.fee!= ""):
-        menu_buttons.append(urwid.Text([u'fee:'.ljust(20), address_obj.fee]))
-    if(address_obj.reserve != ""):
-        menu_buttons.append(urwid.Text([u'reserve:'.ljust(20), address_obj.reserve]))
-    if(address_obj.dust!= ""):
-        menu_buttons.append(urwid.Text([u'dust:'.ljust(20), address_obj.dust]))
-
-
-    done = menu_button(u'Back', pop_current_menu)
-    menu_buttons.append(done)
-    remove = menu_button_withobj(u'Withdraw to this address', withdraw_asset_to_address_chosen, wallet_asset_address_obj)
-    menu_buttons.append(remove)
-
-    top.open_box(menu(u'Withdraw address detail', menu_buttons))
 
 
 def show_withdraw_address_remove(button, wallet_asset_obj):

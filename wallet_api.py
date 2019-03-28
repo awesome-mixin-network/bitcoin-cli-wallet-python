@@ -98,6 +98,24 @@ class Address():
         self.reserve      = jsonInput.get("reserve")
         self.dust         = jsonInput.get("dust")
         self.updated_at   = jsonInput.get("updated_at")
+    def strPresent_of_depositAddress_from(self, prefix =""):
+        Address  = "\n"
+        if self.label != "":
+            Address += prefix + "tag          : %s\n"%self.label
+
+        if self.public_key != "":
+            Address += prefix + "Address      : %s\n"%self.public_key
+
+        if self.account_name!= "":
+            Address += prefix + "Account name : %s\n"%self.account_name
+
+        if self.account_tag!= "":
+            Address += prefix + "Account memo : %s\n"%self.account_tag
+        Address += prefix + "fee          : %s\n"%self.fee
+        Address += prefix + "dust         : %s\n"%self.dust
+        return Address
+
+
 
 class Transfer():
     def __init__(self, jsonInput):
