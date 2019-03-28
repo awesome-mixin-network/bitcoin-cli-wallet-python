@@ -26,7 +26,6 @@ class Asset_pair_price():
         result = "%s %s %s, exchange: %s base:%s target:%s"%(self.price.ljust(8), (self.base_asset_symbol)+"/"+self.exchange_asset_symbol.ljust(15), "min:"+self.minimum_amount+" max:"+ self.maximum_amount+ self.base_asset_symbol.ljust(20), self.supported_by_exchanges, self.base_asset, self.echange_asset)
         return result
 
-
 def fetchExinPrice(source_asset_id, target_asset_id = ""):
     result_fetchPrice = requests.get('https://exinone.com/exincore/markets', params={'base_asset':source_asset_id, "exchange_asset":target_asset_id})
     exin_response = result_fetchPrice.json()
@@ -49,47 +48,54 @@ def memo_is_pay_to_exin(memo_at_snap):
     except :
         print("unpack failed")
         return False
+
+class Exin_execute_result():
+    def __init__(self, exin_order):
+        self.order_result   = exin_order["C"]
+        self.price          = exin_order["P"]
+        self.fee            = exin_order["F"]
+        self.fee_asset_type = exin_order["FA"]
+        self.type           = exin_order["T"]
+        self.order          = exin_order["O"]
+    def __str__(self):
+        headString = "Status of your payment to exin is : "
+        if(self.order_result == 1000):
+            headString = headString + "Successful Exchange"
+            headString = headString + ", your order is executed at price:" +  self.price
+            headString = headString + ", Exin core fee is " + self.fee  + " with fee asset" + str(uuid.UUID(bytes = self.fee_asset_type))
+
+        if(self.order_result == 1001):
+            headString = headString + "The order not found or invalid"
+        if(self.order_result == 1002):
+            headString = headString + "The request data is invalid"
+        if(self.order_result == 1003):
+            headString = headString + "The market not supported"
+        if(self.order_result == 1004):
+            headString = headString + "Failed exchange"
+        if(self.order_result == 1005):
+            headString = headString + "Partial exchange"
+        if(self.order_result == 1006):
+            headString = headString + "Insufficient pool"
+        if(self.order_result == 1007):
+            headString = headString + "Below the minimum exchange amount"
+        if(self.order_result == 1008):
+            headString = headString + "Exceeding the maximum exchange amount"
+        if (self.type == "F"):
+            headString = headString +", your order is refund to you because your memo is not correct"
+        if (self.type == "R"):
+            headString = headString +", your order is executed successfully"
+        if (self.type == "E"):
+            headString = headString +", exin failed to execute your order"
+        headString = headString +", trace id of your payment to exincore is " + str(uuid.UUID(bytes = self.order))
+        return headString
+
+
+
 def memo_is_pay_from_exin(input_snapshot):
     memo_at_snap = input_snapshot.memo
     try:
-        exin_order = umsgpack.unpackb(base64.b64decode(memo_at_snap))
-        if ("C" in exin_order):
-            order_result = exin_order["C"]
-            headString = ": status of your payment to exin is : "
-            if(order_result == 1000):
-                headString = headString + "Successful Exchange"
-            if(order_result == 1001):
-                headString = headString + "The order not found or invalid"
-            if(order_result == 1002):
-                headString = headString + "The request data is invalid"
-            if(order_result == 1003):
-                headString = headString + "The market not supported"
-            if(order_result == 1004):
-                headString = headString + "Failed exchange"
-            if(order_result == 1005):
-                headString = headString + "Partial exchange"
-            if(order_result == 1006):
-                headString = headString + "Insufficient pool"
-            if(order_result == 1007):
-                headString = headString + "Below the minimum exchange amount"
-            if(order_result == 1008):
-                headString = headString + "Exceeding the maximum exchange amount"
-            if ("P" in exin_order):
-                headString = headString + ", your order is executed at price:" +  exin_order["P"] + input_snapshot.asset.symbol
-            if ("F" in exin_order):
-                headString = headString + ", Exin core fee is " + exin_order["F"] + " with fee asset" + str(uuid.UUID(bytes = exin_order["FA"]))
-            if ("T" in exin_order):
-                if (exin_order["T"] == "F"):
-                    headString = headString +", your order is refund to you because your memo is not correct"
-                if (exin_order["T"] == "R"):
-                    headString = headString +", your order is executed successfully"
-                if (exin_order["T"] == "E"):
-                    headString = headString +", exin failed to execute your order"
-            if ("O" in exin_order):
-                headString = headString +", trace id of your payment to exincore is " + str(uuid.UUID(bytes = exin_order["O"]))
-            return headString
-        else:
-            return False
+        exin_order = Exin_execute_result(umsgpack.unpackb(base64.b64decode(memo_at_snap)))
+        return exin_order
     except :
         return False
 
