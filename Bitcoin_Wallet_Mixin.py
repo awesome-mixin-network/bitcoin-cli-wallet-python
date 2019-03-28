@@ -62,29 +62,6 @@ def generateMixinAPI(private_key,pin_token,session_id,user_id,pin,client_secret)
     mixin_config.pay_pin           = pin
     return  MIXIN_API(mixin_config)
 
-def str_AssetPrice(asset_price_in_exin):
-    minimum_pay_base_asset = asset_price_in_exin.get("minimum_amount")
-    maximum_pay_base_asset = asset_price_in_exin.get("maximum_amount")
-    price_base_asset       = asset_price_in_exin.get("price")
-    base_sym               = asset_price_in_exin.get("base_asset_symbol")
-    target_sym             = asset_price_in_exin.get("exchange_asset_symbol")
-    supported_by_exchanges = ""
-    for eachExchange in asset_price_in_exin.get("exchanges"):
-        supported_by_exchanges += eachExchange
-        supported_by_exchanges += " "
-    return ("%s %s %s, exchange: %s"%(price_base_asset.ljust(8), (asset_price_in_exin.get("base_asset_symbol")+"/"+asset_price_in_exin.get("exchange_asset_symbol")).ljust(15), ("min:"+minimum_pay_base_asset+" max:"+ maximum_pay_base_asset).ljust(20), supported_by_exchanges))
-
-def asset_balance(mixinApiInstance, asset_id):
-    asset_result = mixinApiInstance.getAsset(asset_id)
-    assetInfo = asset_result.get("data")
-    return assetInfo.get("balance")
-
-
-def btc_balance_of(mixinApiInstance):
-    return asset_balance(BTC_ASSET_ID)
-def usdt_balance_of(mixinApiInstance):
-    return asset_balance(USDT_ASSET_ID)
-
 def strPresent_of_depositAddress_from(AssetData):
 
     result_string = ""
@@ -129,71 +106,6 @@ def strPresent_of_asset_withdrawaddress(thisAddress, asset_id, prefix = " "* 4):
 def strPresent_of_btc_withdrawaddress(thisAddress, prefix= " " * 8):
     return strPresent_of_asset_withdrawaddress(thisAddress, BTC_ASSET_ID, prefix)
     
-def strPresent_of_usdt_withdrawaddress(thisAddress, prefix = " " * 8):
-    return strPresent_of_asset_withdrawaddress(thisAddress, USDT_ASSET_ID, prefix)
-
-def remove_withdraw_address_of(mixinApiUserInstance, withdraw_asset_id, withdraw_asset_name):
-    USDT_withdraw_addresses_result = mixinApiUserInstance.withdrawals_address(withdraw_asset_id)
-    USDT_withdraw_addresses = USDT_withdraw_addresses_result.get("data")
-    i = 0
-    print("%s withdraw address is:======="%withdraw_asset_name)
-    for eachAddress in USDT_withdraw_addresses:
-        usdtAddress = strPresent_of_usdt_withdrawaddress(eachAddress)
-        print("index %d, %s"%(i, usdtAddress))
-        i = i + 1
-
-    userselect = input("which address index you want to remove")
-    if (int(userselect) < i):
-        eachAddress = USDT_withdraw_addresses[int(userselect)]
-        address_id = eachAddress.get("address_id")
-        Address = "Index %d: %s"%(int(userselect), strPresent_of_asset_withdrawaddress(eachAddress, withdraw_asset_id))
-        confirm = input("Type YES and press enter key to remove " + Address + "!!:")
-        if (confirm == "YES"):
-            input_pin = input("pin:")
-            mixinApiUserInstance.delAddress(address_id, input_pin)
- 
-def explainUserData(inputJsonData):
-    result = {"user_id": inputJsonData.get("user_id"), "full_name":inputJsonData.get("full_name")}
-    return result
-def explainAssetData(inputJsonData):
-    this_account_name = inputJsonData.get("account_name")
-    this_asset_id     = inputJsonData.get("asset_id")
-    this_chain_id     = inputJsonData.get("chain_id")
-    this_asset_symbol = inputJsonData.get("symbol")
-    this_asset_name   = inputJsonData.get("name")
-
-
-    strPresent = ""
-
-    name = this_asset_name
-    if (this_chain_id == "43d61dcd-e413-450d-80b8-101d5e903357") and (this_asset_id != "43d61dcd-e413-450d-80b8-101d5e903357"):
-        #ETH based token
-        name = name + "(ERC20 token)"
-    if (this_chain_id == "6cfe566e-4aad-470b-8c9a-2fd35b49c68d") and (this_asset_id != "6cfe566e-4aad-470b-8c9a-2fd35b49c68d"):
-        #ETH based token
-        name = name + "(issued on EOS)"
-
-    if this_account_name == "":
-        #no need to show account name for EOS or Tron
-        strPresent = strPresent + "%s : %s , deposit is confirmed after %s confirmation, deposit to address:%s"%(name, inputJsonData.get("balance"), inputJsonData.get("confirmations"), inputJsonData.get("public_key"))
-    else:
-        strPresent = strPresent + "%s : %s , deposit is confirmed after %s confirmation, deposit to {account :%s, tag:%s} "%(name, inputJsonData.get("balance"), inputJsonData.get("confirmations"), inputJsonData.get("account_name"), inputJsonData.get("account_tag"))
-       
-    return strPresent
-
-
-
-def explainData(inputJsonData):
-    data = inputJsonData.get("data")
-    if "type" in data:
-        if (data.get("type") == "user"):
-            result = explainUserData(data)
-            return result
-        if (data.get("type") == "asset"):
-            result = explainAssetData(data)
-            return result
-
-
 
 def loadSnapshots(UserInstance, timestamp, asset_id = "", limit = 500):
     USDT_Snapshots_result_of_account = UserInstance.my_snapshots_after(timestamp, asset_id , limit)
