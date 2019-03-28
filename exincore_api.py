@@ -39,17 +39,45 @@ def fetchExinPrice(source_asset_id, target_asset_id = ""):
 def gen_memo_ExinBuy(asset_id_string):
     return base64.b64encode(umsgpack.packb({"A": uuid.UUID("{" + asset_id_string + "}").bytes})).decode("utf-8")
 
-def memo_is_pay_to_exin(memo_at_snap):
+def memo_is_pay_to_exin(input_snapshot):
+    memo_at_snap = input_snapshot.memo
     try:
         exin_order = umsgpack.unpackb(base64.b64decode(memo_at_snap))
-        print("pack ok")
-        asset_uuid_in_myorder = str(uuid.UUID(bytes = exin_order["A"]))
-        return asset_uuid_in_myorder
-    except :
-        print("unpack failed")
+
+        if "A"in exin_order:
+            target_asset_uuid_in_myorder = str(uuid.UUID(bytes = exin_order["A"]))
+
+            my_request_to_exin = Exin_execute_request(input_snapshot, target_asset_uuid_in_myorder)
+            return my_request_to_exin
+        else:
+            return False
+    except umsgpack.InsufficientDataException:
         return False
 
-class Exin_execute_result():
+EXIN_EXEC_TYPE_REQUEST = 0
+EXIN_EXEC_TYPE_RESULT  = 1
+
+class Exin_execute():
+    def __init__(self, execute_type):
+        self.execute_type = execute_type
+    def is_request(self):
+        return self.execute_type == EXIN_EXEC_TYPE_REQUEST
+    def is_result(self):
+        return self.execute_type == EXIN_EXEC_TYPE_RESULT
+
+
+class Exin_execute_request(Exin_execute):
+    def __init__(self, input_snapshot, target_asset_id):
+        self.pay_amount     = abs(float(input_snapshot.amount))
+        self.request_asset  = target_asset_id
+        self.pay_asset      = input_snapshot.asset
+        self.order          = input_snapshot.trace_id
+        super().__init__(EXIN_EXEC_TYPE_REQUEST)
+    def __str__(self):
+        headString = "order: %s, pay %s %s to exin to buy %s "%(self.order, self.pay_amount, self.pay_asset.symbol, self.request_asset)
+        return headString
+
+class Exin_execute_result(Exin_execute):
     def __init__(self, exin_order):
         self.order_result   = exin_order["C"]
         self.price          = exin_order["P"]
@@ -57,6 +85,7 @@ class Exin_execute_result():
         self.fee_asset_type = exin_order["FA"]
         self.type           = exin_order["T"]
         self.order          = exin_order["O"]
+        super().__init__(EXIN_EXEC_TYPE_RESULT)
     def __str__(self):
         headString = "Status of your payment to exin is : "
         if(self.order_result == 1000):
@@ -96,15 +125,15 @@ def memo_is_pay_from_exin(input_snapshot):
     try:
         exin_order = Exin_execute_result(umsgpack.unpackb(base64.b64decode(memo_at_snap)))
         return exin_order
-    except :
+    except umsgpack.InsufficientDataException:
         return False
 
 
 def about_me(input_snapshot):
-    if(input_snapshot.opponent_id == EXINCORE_UUID):
-        if(input_snapshot.is_sent()):
-            asset_id = memo_is_pay_to_exin(input_snapshot.memo)
-            return ("Pay " + input_snapshot.amount + " " + input_snapshot.asset.symbol + " to ExinCore to buy asset with id: " + asset_id + " by trace id:" + input_snapshot.trace_id + ", you can verify the result on https://mixin.one/snapshots/" + input_snapshot.snapshot_id)
-        if(input_snapshot.is_received()):
-            exin_result = memo_is_pay_from_exin(input_snapshot)
-            return exin_result
+    exin_request = memo_is_pay_to_exin(input_snapshot)
+    if exin_request != False:
+        return exin_request
+    exin_result = memo_is_pay_from_exin(input_snapshot)
+    if exin_result != False:
+        return exin_result
+    return False
