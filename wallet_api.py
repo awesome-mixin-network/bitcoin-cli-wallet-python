@@ -234,6 +234,11 @@ class WalletRecord():
         user_result = User_result(verify_pin_result_json)
         return user_result
 
+    def update_pin(self, input_old_pin, input_new_pin):
+        update_pin_result_json = self.mixinAPIInstance.updatePin(input_new_pin, input_old_pin)
+        user_result = User_result(update_pin_result_json)
+        return user_result
+
 
 def append_wallet_into_csv_file(this_wallet, file_name):
     with open(file_name, 'a', newline='') as csvfile:

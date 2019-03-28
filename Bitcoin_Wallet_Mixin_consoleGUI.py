@@ -23,14 +23,36 @@ def menu(title, choices):
     body = [urwid.Text(title), urwid.Divider()]
     body.extend(choices)
     return urwid.ListBox(urwid.SimpleFocusListWalker(body))
-def verifypin_chosen(button, wallet_obj):
+def verify_pin_chosen(button, wallet_obj):
     menu_buttons = []
-    response = urwid.Text([u'', button.label, u'\n'])
-    menu_buttons.append(response)
-    done = menu_button(u'Ok', exit_program)
-    menu_buttons.append(done)
 
-    top.open_box(urwid.Filler(urwid.Pile(menu_buttons)))
+    exe_pin_code_field = urwid.Edit(u'pin:\n', mask=u"*")
+
+    menu_buttons.append(exe_pin_code_field)
+    done = menu_button_withobj(u'Verify', verify_pin_confirm_chosen, (wallet_obj, exe_pin_code_field))
+
+    back = menu_button(u'Back', pop_current_menu)
+    menu_buttons.append(done)
+    menu_buttons.append(back)
+
+    top.open_box(menu(u'Verify pin', menu_buttons))
+
+def update_pin_chosen(button, wallet_obj):
+    menu_buttons = []
+
+    old_pin_code_field = urwid.Edit(u'old pin:\n', mask=u"*")
+    new_pin_code_field = urwid.Edit(u'new pin:\n', mask=u"*")
+
+    menu_buttons.append(old_pin_code_field)
+    menu_buttons.append(new_pin_code_field)
+
+    done = menu_button_withobj(u'Update', update_pin_confirm_chosen, (wallet_obj, old_pin_code_field, new_pin_code_field))
+
+    back = menu_button(u'Back', pop_current_menu)
+    menu_buttons.append(done)
+    menu_buttons.append(back)
+
+    top.open_box(menu(u'Update pin', menu_buttons))
 
 
 def withdraw_asset_chosen(button, wallet_asset_obj):
@@ -158,6 +180,34 @@ def remove_withdraw_address_confirm_chosen(button, wallet_asset_uuid_amount_pin_
         done = menu_button(u'Ok', pop_to_account_menu)
         top.open_box(urwid.Filler(urwid.Pile([response, done])))
 
+def verify_pin_confirm_chosen(button, wallet_asset_uuid_amount_pin_obj):
+    wallet_obj = wallet_asset_uuid_amount_pin_obj[0]
+    pin_obj    = wallet_asset_uuid_amount_pin_obj[1]
+    verify_result = wallet_obj.verify_pin(pin_obj.get_edit_text())
+    if(verify_result.is_success):
+        verify_url = "Successfully verified pin"
+        response = urwid.Text(["Successfully verified pin"])
+        done_button = menu_button(u'Ok', pop_to_account_menu)
+        top.open_box(urwid.Filler(urwid.Pile([response, done_button])))
+    else:
+        response = urwid.Text(["Failed to verify pin"])
+        done = menu_button(u'Ok', pop_current_and_more_menu)
+        top.open_box(urwid.Filler(urwid.Pile([response, done])))
+
+def update_pin_confirm_chosen(button, wallet_asset_uuid_amount_pin_obj):
+    wallet_obj = wallet_asset_uuid_amount_pin_obj[0]
+    old_pin_obj    = wallet_asset_uuid_amount_pin_obj[1]
+    new_pin_obj    = wallet_asset_uuid_amount_pin_obj[2]
+    update_result = wallet_obj.update_pin(old_pin_obj.get_edit_text(), new_pin_obj.get_edit_text())
+    if(update_result.is_success):
+        response = urwid.Text(["Successfully update pin"])
+        done_button = menu_button(u'Ok', pop_to_account_menu)
+        top.open_box(urwid.Filler(urwid.Pile([response, done_button])))
+    else:
+        response = urwid.Text(["Failed to update pin"])
+        done = menu_button(u'Ok', pop_current_and_more_menu)
+        top.open_box(urwid.Filler(urwid.Pile([response, done])))
+
 
 def send_confirm_chosen(button, wallet_asset_uuid_amount_pin_obj):
     wallet_obj = wallet_asset_uuid_amount_pin_obj[0]
@@ -170,13 +220,15 @@ def send_confirm_chosen(button, wallet_asset_uuid_amount_pin_obj):
     this_uuid  = ""
 
     transfer_result = wallet_obj.transfer_to(uuid_obj.get_edit_text(), asset_obj.asset_id, amount_obj.get_edit_text(), memo_obj.get_edit_text(), this_uuid, pin_obj.get_edit_text())
-    if(transfer_result != False):
-        response = urwid.Text(["your transaction is confirmed by Mixin Network with snapshot: %s, you can verify on browser:%s"%(transfer_result.snapshot_id, "https://mixin.one/snapshots/" + transfer_result.snapshot_id)])
-        done = menu_button(u'Ok', pop_current_menu)
-        top.open_box(urwid.Filler(urwid.Pile([response, done])))
+    if(transfer_result.is_success):
+        verify_url = "https://mixin.one/snapshots/" + transfer_result.snapshot_id
+        response = urwid.Text([str(transfer_result), ". You can verify on browser:\n%s"%verify_url])
+        done_button = menu_button(u'Ok', pop_to_account_menu)
+        copy_button = menu_button_withobj(("copy %s to clip board"%(verify_url)), copy_content_to_system_clip, verify_url)
+        top.open_box(urwid.Filler(urwid.Pile([response, copy_button, done_button])))
     else:
-        response = urwid.Text(["your transaction is failed"])
-        done = menu_button(u'Ok', pop_current_menu)
+        response = urwid.Text([str(transfer_result)])
+        done = menu_button(u'Ok', pop_current_and_more_menu)
         top.open_box(urwid.Filler(urwid.Pile([response, done])))
 
 def send_chosen(button, wallet_asset_obj):
@@ -385,10 +437,10 @@ def asset_chosen(button, wallet_asset_obj):
     asset_obj  = wallet_asset_obj[1]
     asset_chosen_menu_buttons = []
     asset_chosen_menu_buttons.append(menu_button_withobj("send to mixin account", send_chosen, wallet_asset_obj))
-    asset_chosen_menu_buttons.append(menu_button_withobj("deposit address", deposit_chosen, wallet_asset_obj))
-    asset_chosen_menu_buttons.append(menu_button_withobj("recent transaction", send_chosen, wallet_obj)) 
-    asset_chosen_menu_buttons.append(menu_button_withobj("manage withdraw contacts", manageasset_chosen, wallet_asset_obj))
     asset_chosen_menu_buttons.append(menu_button_withobj("withdraw to other address", withdraw_asset_chosen, wallet_asset_obj))
+    asset_chosen_menu_buttons.append(menu_button_withobj("show deposit address", deposit_chosen, wallet_asset_obj))
+    asset_chosen_menu_buttons.append(menu_button_withobj("manage withdraw contacts", manageasset_chosen, wallet_asset_obj))
+    #asset_chosen_menu_buttons.append(menu_button_withobj("recent transaction", send_chosen, wallet_obj)) 
 
     asset_chosen_menu_buttons.append(menu_button(u'Back', pop_current_menu))
 
@@ -398,11 +450,11 @@ def asset_chosen(button, wallet_asset_obj):
 def wallet_chosen(button, wallet_obj):
     wallet_chosen_menu_buttons = []
     wallet_chosen_menu_buttons.append(menu_button_withobj("balance", balance_chosen, wallet_obj))
-    wallet_chosen_menu_buttons.append(menu_button_withobj("search snapshots", send_chosen, wallet_obj))
+    #wallet_chosen_menu_buttons.append(menu_button_withobj("search snapshots", send_chosen, wallet_obj))
     wallet_chosen_menu_buttons.append(menu_button_withobj("instant exchange token in exin", send_chosen, wallet_obj))
-    wallet_chosen_menu_buttons.append(menu_button_withobj("ocean.one exchange", send_chosen, wallet_obj))
-    wallet_chosen_menu_buttons.append(menu_button_withobj("verify pin", verifypin_chosen, wallet_obj))
-    wallet_chosen_menu_buttons.append(menu_button_withobj("update pin", verifypin_chosen, wallet_obj))
+    #wallet_chosen_menu_buttons.append(menu_button_withobj("ocean.one exchange", send_chosen, wallet_obj))
+    wallet_chosen_menu_buttons.append(menu_button_withobj("verify pin", verify_pin_chosen, wallet_obj))
+    wallet_chosen_menu_buttons.append(menu_button_withobj("update pin", update_pin_chosen, wallet_obj))
     wallet_chosen_menu_buttons.append(menu_button(u'Back', pop_current_menu))
 
     top.open_box(menu(u'user id:' + wallet_obj.userid, wallet_chosen_menu_buttons))
@@ -415,6 +467,14 @@ def item_chosen(button):
 def exit_program(button):
     raise urwid.ExitMainLoop()
 def pop_current_menu(button):
+    top.close_box()
+
+def pop_current_and_more_menu(button):
+    top.close_box()
+    top.close_box()
+def pop_current_and_more_more_menu(button):
+    top.close_box()
+    top.close_box()
     top.close_box()
 def pop_to_account_menu(button):
     top.back_to_account()

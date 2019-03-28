@@ -644,6 +644,7 @@ while ( 1 > 0 ):
         print(userInfo)
 
     if ( cmd == 'updatepin' ):
-        newPin = getpass.getpass("input new pin:")
+
         oldPin = getpass.getpass("input old pin:")
-        print(mixinApiNewUserInstance.updatePin(newPin,oldPin))
+        newPin = getpass.getpass("input new pin:")
+        print(mixinWalletInstance.update_pin(oldPin, newPin))
