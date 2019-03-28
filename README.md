@@ -111,5 +111,6 @@ pip install -r requirements.txt
 
 Run the code
 ```bash
-python3 Bitcoin_Wallet_Mixin.py
+python Bitcoin_Wallet_Mixin_consoleGUI.py
 ```
+![gui](https://github.com/awesome-mixin-network/bitcoin-cli-wallet-python/raw/master/screen_shot_wallet.png)
