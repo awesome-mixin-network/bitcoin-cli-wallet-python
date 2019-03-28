@@ -501,7 +501,7 @@ while ( 1 > 0 ):
      
                     memo_for_exin = exincore_api.gen_memo_ExinBuy(target_asset_id)
  
-                    balance_base_asset = mixinApiNewUserInstance.getAsset(source_asset_id).get("data").get("balance")
+                    balance_base_asset = mixinWalletInstance.get_singleasset_balance(source_asset_id).balance
                     amount_to_pay =  input("how much you want to pay, %s %s in your balance:"%(balance_base_asset, base_sym))
                     this_uuid = str(uuid.uuid1())
                     estimated_target_amount = str(float(amount_to_pay)/float(price_base_asset))
@@ -509,13 +509,14 @@ while ( 1 > 0 ):
                     if ( confirm_pay == "YES" ):
                         input_pin = getpass.getpass("pin code:")
      
-                        transfer_result = mixinApiNewUserInstance.transferTo(EXINCORE_UUID, source_asset_id, amount_to_pay, memo_for_exin, this_uuid, input_pin)
+                        transfer_result = mixinWalletInstance.transfer_to(EXINCORE_UUID, source_asset_id, amount_to_pay, memo_for_exin, this_uuid, input_pin)
                         if(transfer_result != False):
-                            snapShotID = transfer_result.get("data").get("snapshot_id")
+                            print(transfer_result)
+                            snapShotID = transfer_result.snapshot_id
                             print("Pay " + amount_to_pay + " " + base_sym + "to ExinCore to buy " + estimated_target_amount + target_sym + " by uuid:" + this_uuid + ", you can verify the result on https://mixin.one/snapshots/" + snapShotID)
                             checkResult = input("Type YES and press enter key to check latest snapshot:")
                             if (checkResult == "YES"):
-                                loadSnapshots(mixinApiNewUserInstance, transfer_result.get("data").get("created_at"), target_asset_id)
+                                loadSnapshots(mixinApiNewUserInstance, transfer_result.created_at, target_asset_id)
      
     if ( cmd == 'create' ):
         thisAccountRSAKeyPair = wallet_api.RSAKey4Mixin()
