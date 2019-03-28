@@ -4,12 +4,12 @@ import mixin_config
 import json
 import csv
 import time
-import uuid
 import umsgpack
 import base64
 import getpass
 import requests
 import wallet_api
+import exincore_api
 
 PIN             = "945689";
 PIN2            = "845689";
@@ -74,19 +74,6 @@ def str_AssetPrice(asset_price_in_exin):
         supported_by_exchanges += eachExchange
         supported_by_exchanges += " "
     return ("%s %s %s, exchange: %s"%(price_base_asset.ljust(8), (asset_price_in_exin.get("base_asset_symbol")+"/"+asset_price_in_exin.get("exchange_asset_symbol")).ljust(15), ("min:"+minimum_pay_base_asset+" max:"+ maximum_pay_base_asset).ljust(20), supported_by_exchanges))
-
-def fetchExinPrice(source_asset_id, target_asset_id = ""):
-    result_fetchPrice = requests.get('https://exinone.com/exincore/markets', params={'base_asset':source_asset_id, "exchange_asset":target_asset_id})
-    exin_response = result_fetchPrice.json()
-
-    datalist_in_response = []
-    if (exin_response.get("code") == 0):
-        for eachData in exin_response.get("data"):
-            datalist_in_response.append(eachData)
-    return datalist_in_response
-
-def gen_memo_ExinBuy(asset_id_string):
-    return base64.b64encode(umsgpack.packb({"A": uuid.UUID("{" + asset_id_string + "}").bytes})).decode("utf-8")
 
 def asset_balance(mixinApiInstance, asset_id):
     asset_result = mixinApiInstance.getAsset(asset_id)
@@ -480,10 +467,10 @@ while ( 1 > 0 ):
     if ( cmd == 'instanttrade'):
         # Pack memo
 
-        exin_assets_price = fetchExinPrice(USDT_ASSET_ID)
+        exin_assets_price = exincore_api.fetchExinPrice(USDT_ASSET_ID)
         i = 0
         for each_asset_price in exin_assets_price:
-            print(str(i).ljust(2) + ":" + str_AssetPrice(each_asset_price))
+            print(str(i).ljust(2) + ":" + str(each_asset_price))
             i = i + 1
 
         if (len(exin_assets_price) > 0):
@@ -491,26 +478,28 @@ while ( 1 > 0 ):
             user_select_coin = int(input("which index:"))
             if (user_select_coin < len(exin_assets_price)):
                 selected_coin = exin_assets_price[user_select_coin]
-                buy_or_sell = input("buy or sell %s:"%selected_coin.get("exchange_asset_symbol"))
+                buy_or_sell = input("buy or sell %s:"%selected_coin.exchange_asset_symbol)
      
                 if buy_or_sell == "sell":
                     target_asset_id = USDT_ASSET_ID
-                    source_asset_id = selected_coin.get("exchange_asset")
+                    source_asset_id = selected_coin.echange_asset
                 if buy_or_sell == "buy":
-                    target_asset_id = selected_coin.get("exchange_asset")
+                    target_asset_id = selected_coin.echange_asset
                     source_asset_id = USDT_ASSET_ID
      
                 if buy_or_sell == "sell" or buy_or_sell == "buy":
-                    print("fetching latest price")
-                    asset_price_result = fetchExinPrice(source_asset_id, target_asset_id)
+
+                    print(selected_coin.debug_str())
+                    print("fetching latest price" + selected_coin.echange_asset)
+                    asset_price_result = exincore_api.fetchExinPrice(source_asset_id, target_asset_id)
                     asset_price = asset_price_result[0]
-                    minimum_pay_base_asset = asset_price.get("minimum_amount")
-                    maximum_pay_base_asset = asset_price.get("maximum_amount")
-                    price_base_asset       = asset_price.get("price")
-                    base_sym               = asset_price.get("base_asset_symbol")
-                    target_sym             = asset_price.get("exchange_asset_symbol")
+                    minimum_pay_base_asset = asset_price.minimum_amount
+                    maximum_pay_base_asset = asset_price.maximum_amount
+                    price_base_asset       = asset_price.price
+                    base_sym               = asset_price.base_asset_symbol
+                    target_sym             = asset_price.exchange_asset_symbol
      
-                    memo_for_exin = gen_memo_ExinBuy(target_asset_id)
+                    memo_for_exin = exincore_api.gen_memo_ExinBuy(target_asset_id)
  
                     balance_base_asset = mixinApiNewUserInstance.getAsset(source_asset_id).get("data").get("balance")
                     amount_to_pay =  input("how much you want to pay, %s %s in your balance:"%(balance_base_asset, base_sym))
