@@ -1,6 +1,8 @@
 import csv
 from mixin_api import MIXIN_API
 from Crypto.PublicKey import RSA
+import iso8601
+import time
 
 def pubkeyContent(inputContent):
     contentWithoutHeader= inputContent[len("-----BEGIN PUBLIC KEY-----") + 1:]
@@ -278,7 +280,7 @@ class WalletRecord():
         counter = 0
         mysnapshots_result = []
         last_time = timestamp
-        while((len(mysnapshots_result) < limit ) and (counter < retry)):
+        while((len(mysnapshots_result) < limit ) and (counter < retry) and ((time.time() - iso8601.parse_date(last_time).timestamp()) > 2)):
             counter += 1
             snapshots_json = self.mixinAPIInstance.account_snapshots_after(last_time, asset_id, 500)
 

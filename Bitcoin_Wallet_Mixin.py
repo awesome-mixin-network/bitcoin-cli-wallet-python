@@ -257,7 +257,7 @@ while ( 1 > 0 ):
 
     if ( cmd == 'searchsnapshots'):
         timestamp = input("input timestamp, history after the time will be searched:")
-        USDT_Snapshots_result_of_account = mixinWalletInstance.my_snapshots_after(timestamp, asset_id = "", limit = 500)
+        USDT_Snapshots_result_of_account = mixinWalletInstance.my_snapshots_after(timestamp, asset_id = "", limit = 500, retry = 100)
         for singleSnapShot in USDT_Snapshots_result_of_account:
             print(singleSnapShot)
             print(exincore_api.about_me(singleSnapShot))
