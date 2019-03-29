@@ -38,7 +38,22 @@ class RSAKey4Mixin():
         session_key = pubkeyContent(pubkey.exportKey())
         self.session_key = session_key.decode()
         self.private_key = private_key.decode()
- 
+
+class Mixin_Wallet_API_Result_Error():
+    def __init__(self, dictInput):
+        self.status      = dictInput.get("status")
+        self.code        = dictInput.get("code")
+        self.description = dictInput.get("description")
+
+
+class Mixin_Wallet_API_Result():
+    def __init__(self, jsonInput):
+        if ("error" in jsonInput):
+            self.is_success = False
+            self.error      = Mixin_Wallet_API_Result_Error(jsonInput.get("error"))
+        else:
+            self.is_success = True
+
 class userInfo():
     def __init__(self, pin_token = "", session_id = "", user_id = ""):
         self.pin_token = pin_token
@@ -124,34 +139,40 @@ class Snapshot():
     def is_my_snap(self):
         return self.user_id != None
 
-class Address():
+class Address(Mixin_Wallet_API_Result):
     def __init__(self, jsonInput):
-        self.address_id   = jsonInput.get("address_id")
-        self.public_key   = jsonInput.get("public_key")
-        self.asset_id     = jsonInput.get("asset_id")
-        self.label        = jsonInput.get("label")
-        self.account_name = jsonInput.get("account_name")
-        self.account_tag  = jsonInput.get("account_tag")
-        self.fee          = jsonInput.get("fee")
-        self.reserve      = jsonInput.get("reserve")
-        self.dust         = jsonInput.get("dust")
-        self.updated_at   = jsonInput.get("updated_at")
-    def strPresent_of_withdraw_address(self, prefix =""):
-        Address  = "\n"
+        super().__init__(jsonInput)
+        if self.is_success:
+            self.address_id   = jsonInput.get("address_id")
+            self.public_key   = jsonInput.get("public_key")
+            self.asset_id     = jsonInput.get("asset_id")
+            self.label        = jsonInput.get("label")
+            self.account_name = jsonInput.get("account_name")
+            self.account_tag  = jsonInput.get("account_tag")
+            self.fee          = jsonInput.get("fee")
+            self.reserve      = jsonInput.get("reserve")
+            self.dust         = jsonInput.get("dust")
+            self.updated_at   = jsonInput.get("updated_at")
+    def __str__(self):
+        if self.is_success == False:
+            result = "Failed :%s, status: %s code: %s"%(self.error.description, self.error.status, self.error.code)
+            return result
+        result  = "\n"
         if self.label != "":
-            Address += prefix + "tag          : %s\n"%self.label
+            result += prefix + "tag          : %s\n"%self.label
 
         if self.public_key != "":
-            Address += prefix + "Address      : %s\n"%self.public_key
+            result += prefix + "Address : %s\n"%self.public_key
 
         if self.account_name!= "":
-            Address += prefix + "Account name : %s\n"%self.account_name
+            result += prefix + "Account name : %s\n"%self.account_name
 
         if self.account_tag!= "":
-            Address += prefix + "Account memo : %s\n"%self.account_tag
-        Address += prefix + "fee          : %s\n"%self.fee
-        Address += prefix + "dust         : %s\n"%self.dust
-        return Address
+            result += prefix + "Account memo : %s\n"%self.account_tag
+        result += prefix + "fee          : %s\n"%self.fee
+        result += prefix + "dust         : %s\n"%self.dust
+        return result
+
 
 
 class User_result():
@@ -253,7 +274,7 @@ class WalletRecord():
         return asset_addresses
     def create_address(self, asset_id, public_key = "", label = "", asset_pin = "", account_name = "", account_tag = ""):
         create_result_json = self.mixinAPIInstance.createAddress(asset_id, public_key , label , asset_pin , account_name , account_tag )
-        return Address(create_result_json.get("data"))
+        return Address(create_result_json)
     def remove_address(self, to_be_deleted_address_id, input_pin):
         create_result_json = self.mixinAPIInstance.delAddress(to_be_deleted_address_id, input_pin)
         return create_result_json

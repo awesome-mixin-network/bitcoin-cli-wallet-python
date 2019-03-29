@@ -128,12 +128,12 @@ def add_withdraw_address_confirm_chosen(button, wallet_asset_uuid_amount_pin_obj
 
     create_address_result = wallet_obj.create_address(asset_obj.asset_id, deposit_address.get_edit_text(), tag_content.get_edit_text(), asset_pin = pin_obj.get_edit_text())
 
-    if(create_address_result != False):
+    if(create_address_result.is_success):
         response = urwid.Text(["the address :", deposit_address.get_edit_text(), " is added to your account with id:", create_address_result.address_id])
         done = menu_button(u'Ok', pop_to_account_menu)
         top.open_box(urwid.Filler(urwid.Pile([response, done])))
     else:
-        response = urwid.Text(["your transaction is failed"])
+        response = urwid.Text(["Failed deposit_address %s tag_content %s %s"%(deposit_address.get_edit_text(), tag_content.get_edit_text(), create_address_result)])
         done = menu_button(u'Ok', pop_to_account_menu)
         top.open_box(urwid.Filler(urwid.Pile([response, done])))
 
@@ -352,7 +352,7 @@ def withdraw_asset_to_address_chosen(button, wallet_asset_address_obj):
     menu_buttons.append(done)
     menu_buttons.append(back)
 
-    top.open_box(menu(u'Withdraw asset to ' + address_obj.strPresent_of_withdraw_address(), menu_buttons))
+    top.open_box(menu(u'Withdraw asset to ' + address_obj, menu_buttons))
 
 
 
