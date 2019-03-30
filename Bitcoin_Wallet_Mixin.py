@@ -228,7 +228,11 @@ while ( 1 > 0 ):
                         if(transfer_result != False):
                             print(transfer_result)
                 if (address_type == "1"):
-                    withdraw_addresses = mixinWalletInstance.get_asset_withdrawl_addresses(selected_asset.asset_id)
+                    withdraw_addresses_result = mixinWalletInstance.get_asset_withdrawl_addresses(selected_asset.asset_id)
+                    if withdraw_addresses_result.is_success:
+                        withdraw_addresses = withdraw_addresses_result.data
+                    else:
+                        withdraw_addresses = []
                     i = 0
                     for eachAddress in withdraw_addresses:
                         btcAddress = strPresent_of_btc_withdrawaddress(eachAddress)
@@ -249,8 +253,10 @@ while ( 1 > 0 ):
                             this_uuid = str(uuid.uuid1())
                             asset_pin = getpass.getpass("pin:")
                             asset_withdraw_result = mixinWalletInstance.withdraw_asset_to(address_id, withdraw_amount, "withdraw2"+address_pubkey, this_uuid, asset_pin)
-                            if(asset_withdraw_result != False):
-                                print("Your withdraw is successful , snapshot id: %s"%asset_withdraw_result.snapshot_id)
+                            if(asset_withdraw_result.is_success):
+                                print("Your withdraw is successful , snapshot id: %s"%asset_withdraw_result.data.snapshot_id)
+                            else:
+                                print("Your withdraw is failed due to  %s"%asset_withdraw_result)
 
         else:
             print("no available asset to send")

@@ -153,14 +153,14 @@ def withdraw_asset_to_address_confirm_chosen(button, wallet_address_amount_pin_o
     this_uuid  = ""
 
     withdraw_asset_to_address_result = wallet_obj.withdraw_asset_to(address_obj.address_id, amount_obj.get_edit_text(), memo_obj.get_edit_text(), this_uuid, pin_obj.get_edit_text())
-    if(withdraw_asset_to_address_result != False):
+    if(withdraw_asset_to_address_result.is_success):
         #pop_to_account_menu(button)
-        response = urwid.Text(["Your withdraw operation is successful, snapshot id is:", withdraw_asset_to_address_result.snapshot_id])
+        response = urwid.Text(["Your withdraw operation is successful, snapshot id is:", withdraw_asset_to_address_result.data.snapshot_id])
         done = menu_button(u'Ok', pop_to_account_menu)
         top.open_box(urwid.Filler(urwid.Pile([response, done])))
 
     else:
-        response = urwid.Text(["Your withdraw asset operation is failed"])
+        response = urwid.Text(["Your withdraw asset operation is failed due to ", str(withdraw_asset_to_address_result)])
         done = menu_button(u'Ok', pop_to_account_menu)
         top.open_box(urwid.Filler(urwid.Pile([response, done])))
 
