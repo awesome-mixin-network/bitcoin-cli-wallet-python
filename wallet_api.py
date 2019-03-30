@@ -165,10 +165,8 @@ class Address():
         self.dust         = jsonInput.get("dust")
         self.updated_at   = jsonInput.get("updated_at")
     def __str__(self):
-        if self.is_success == False:
-            result = "Failed :%s, status: %s code: %s"%(self.error.description, self.error.status, self.error.code)
-            return result
         result  = "\n"
+        prefix = " "
         if self.label != "":
             result += prefix + "tag          : %s\n"%self.label
 
@@ -183,6 +181,13 @@ class Address():
         result += prefix + "fee          : %s\n"%self.fee
         result += prefix + "dust         : %s\n"%self.dust
         return result
+def Address_list(jsonInputList):
+    result = []
+    for i in jsonInputList:
+        result.append(Address(i))
+    return result
+
+
 
 
 
@@ -278,11 +283,9 @@ class WalletRecord():
         single_asset_json = self.mixinAPIInstance.getAsset(input_asset_id)
         return Asset(single_asset_json.get("data"))
     def get_asset_withdrawl_addresses(self, input_asset_id):
-        asset_addresses_json = self.mixinAPIInstance.withdrawals_address(input_asset_id).get("data")
-        asset_addresses = []
-        for each_address_json in asset_addresses_json:
-            asset_addresses.append(Address(each_address_json))
-        return asset_addresses
+        asset_addresses_json = self.mixinAPIInstance.withdrawals_address(input_asset_id)
+        asset_withdraw_addresses = Mixin_Wallet_API_Result(asset_addresses_json, Address_list)
+        return asset_withdraw_addresses
     def create_address(self, asset_id, public_key = "", label = "", asset_pin = "", account_name = "", account_tag = ""):
         create_result_json = self.mixinAPIInstance.createAddress(asset_id, public_key , label , asset_pin , account_name , account_tag )
         createAddress_result = Mixin_Wallet_API_Result(create_result_json ,Address)

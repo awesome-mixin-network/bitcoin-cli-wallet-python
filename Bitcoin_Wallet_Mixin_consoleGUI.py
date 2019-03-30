@@ -62,13 +62,14 @@ def withdraw_asset_chosen(button, wallet_asset_obj):
 
     menu_buttons = []
 
-    withdraw_addresses = wallet_obj.get_asset_withdrawl_addresses(asset_obj.asset_id)
+    withdraw_addresses_result = wallet_obj.get_asset_withdrawl_addresses(asset_obj.asset_id)
+    if(withdraw_addresses_result.is_success):
+        withdraw_addresses = withdraw_addresses_result.data
+    else:
+        withdraw_addresses = []
     for each_withdraw_address in withdraw_addresses:
         select_to_detail = menu_button_withobj(each_withdraw_address.label, withdraw_asset_to_address_chosen, (wallet_obj, asset_obj, each_withdraw_address))
         menu_buttons.append(select_to_detail)
-
-
-    #done = menu_button_withobj(u'Send', show_content, (wallet_obj, asset_obj, "12", "23", "memo", "pin"))
 
     back = menu_button(u'Back', pop_current_menu)
     menu_buttons.append(back)
@@ -83,7 +84,11 @@ def manageasset_chosen(button, wallet_asset_obj):
 
     menu_buttons = []
 
-    withdraw_addresses = wallet_obj.get_asset_withdrawl_addresses(asset_obj.asset_id)
+    withdraw_addresses_result = wallet_obj.get_asset_withdrawl_addresses(asset_obj.asset_id)
+    if withdraw_addresses_result.is_success:
+        withdraw_addresses = withdraw_addresses_result.data
+    else:
+        withdraw_addresses = []
     for each_withdraw_address in withdraw_addresses:
         select_to_detail = menu_button_withobj(each_withdraw_address.label, show_withdraw_address_remove, (wallet_obj, each_withdraw_address))
         menu_buttons.append(select_to_detail)
@@ -352,7 +357,7 @@ def withdraw_asset_to_address_chosen(button, wallet_asset_address_obj):
     menu_buttons.append(done)
     menu_buttons.append(back)
 
-    top.open_box(menu(u'Withdraw asset to ' + address_obj, menu_buttons))
+    top.open_box(menu(u'Withdraw asset to ' + str(address_obj), menu_buttons))
 
 
 
