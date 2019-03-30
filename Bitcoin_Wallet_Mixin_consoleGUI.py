@@ -286,10 +286,11 @@ def deposit_chosen(button, wallet_asset_obj):
 def balance_chosen(button, wallet_obj):
     balance_chosen_menu_buttons = []
 
-    all_assets = wallet_obj.get_balance()
-    for eachAsset in all_assets:
-        balance_chosen_menu_buttons.append(menu_button_withobj(eachAsset.name.ljust(15)+":"+ eachAsset.balance, asset_chosen, (wallet_obj, eachAsset)))
-
+    balance_result = wallet_obj.get_balance()
+    if (balance_result.is_success):
+        all_assets = balance_result.data
+        for eachAsset in all_assets:
+            balance_chosen_menu_buttons.append(menu_button_withobj(eachAsset.name.ljust(15)+":"+ eachAsset.balance, asset_chosen, (wallet_obj, eachAsset)))
 
     balance_chosen_menu_buttons.append(menu_button(u'Back', pop_current_menu))
     top.open_box(menu(u'user id:' + wallet_obj.userid, balance_chosen_menu_buttons))

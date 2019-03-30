@@ -163,24 +163,25 @@ while ( 1 > 0 ):
                                                             selected_wallet.userid,
                                                             selected_wallet.pin,"")
     if ( cmd == 'balance' ):
-        print(time.time())
-        all_assets = mixinWalletInstance.get_balance()
-        asset_id_groups_in_myassets = []
-        for eachAsset in all_assets:
-            asset_id_groups_in_myassets.append(eachAsset.asset_id)
+        balance_result = mixinWalletInstance.get_balance()
+        if balance_result.is_success:
+            all_assets = balance_result.data
+            asset_id_groups_in_myassets = []
+            for eachAsset in all_assets:
+                asset_id_groups_in_myassets.append(eachAsset.asset_id)
 
-        print("Your asset balance is\n===========")
+            print("Your asset balance is\n===========")
 
-        for eachAsset in all_assets:
-            print("%s: %s" %(eachAsset.name.ljust(15), eachAsset.balance))
-        print(time.time())
-
-        for eachAssetID in MIXIN_DEFAULT_CHAIN_GROUP:
-            if ( not (eachAssetID in asset_id_groups_in_myassets)):
-                eachAsset = mixinWalletInstance.get_singleasset_balance(eachAssetID)
-                if eachAsset.is_success:
-                    print("%s: %s" %(eachAsset.data.name.ljust(15), eachAsset.data.balance))
-        print("===========")
+            for eachAsset in all_assets:
+                print("%s: %s" %(eachAsset.name.ljust(15), eachAsset.balance))
+            print(time.time())
+         
+            for eachAssetID in MIXIN_DEFAULT_CHAIN_GROUP:
+                if ( not (eachAssetID in asset_id_groups_in_myassets)):
+                    eachAsset = mixinWalletInstance.get_singleasset_balance(eachAssetID)
+                    if eachAsset.is_success:
+                        print("%s: %s" %(eachAsset.data.name.ljust(15), eachAsset.data.balance))
+            print("===========")
     if (cmd == "deposit"):
 
         all_assets = mixinWalletInstance.get_balance()
@@ -200,68 +201,70 @@ while ( 1 > 0 ):
 
     if (cmd == "send"):
 
-        all_asset = mixinWalletInstance.get_balance()
+        balance_result = mixinWalletInstance.get_balance()
         print("select an asset to send" + "===========")
 
-        none_zero_asset = []
-        for eachAsset in all_asset:
-            if (float(eachAsset.balance)) > 0:
-                none_zero_asset.append(eachAsset)
-        i = 0
-        for eachNoneZero in none_zero_asset:
-            print("Send %s: %d" %(eachNoneZero.name.ljust(15), i))
-            i = i + 1
-        if (i > 0 and i <= len(none_zero_asset)):
-            selected_index = int(input("index number:"))
-            if selected_index < len(none_zero_asset):
-                selected_asset = none_zero_asset[selected_index]
-                print("send to mixin network uuid: 0")
-                print("send to asset address     : 1")
-                address_type = input("your selection:")
-                if (address_type == "0"):
-                    destination_uuid = input("destination uuid:")
-                    amount_tosend     = input("quantity(%s remain):"%selected_asset.balance)
-                    memo_input = input("memo:")
-                    asset_pin_input = getpass.getpass("pin code:")
-                    this_uuid = str(uuid.uuid1())
-                    user_confirm = input("Type YES and press enter key to confirm: send %s %s to %s , memo:%s, trace id: %s:"%(amount_tosend, selected_asset.name, destination_uuid, memo_input, this_uuid))
-                    if (user_confirm == "YES"):
-                        transfer_result = mixinWalletInstance.transfer_to(destination_uuid, selected_asset.asset_id, amount_tosend, memo_input, this_uuid, asset_pin_input)
-                        if(transfer_result != False):
-                            print(transfer_result)
-                if (address_type == "1"):
-                    withdraw_addresses_result = mixinWalletInstance.get_asset_withdrawl_addresses(selected_asset.asset_id)
-                    if withdraw_addresses_result.is_success:
-                        withdraw_addresses = withdraw_addresses_result.data
-                    else:
-                        withdraw_addresses = []
-                    i = 0
-                    for eachAddress in withdraw_addresses:
-                        btcAddress = strPresent_of_btc_withdrawaddress(eachAddress)
-                        print("%s:\n%s"%(str(i).ljust(10, '-'), btcAddress))
-                        i = i + 1
-                    user_choice = int(input("your choice:"))
-
-                    if (user_choice < len(withdraw_addresses)):
-                        selected_withdraw_address = withdraw_addresses[user_choice]
-                        withdraw_amount = input("amount to withdraw:")
-                        address_id = selected_withdraw_address.address_id
-                        address_pubkey = selected_withdraw_address.public_key
-                        withdraw_asset_id = selected_withdraw_address.asset_id
-
-                        address_selected = "%s"%(strPresent_of_asset_withdrawaddress(selected_withdraw_address, withdraw_asset_id))
-                        confirm = input("Type YES and press enter key to withdraw " + withdraw_amount + " " + selected_asset.name + " to \n" + address_selected + ":")
-                        if (confirm == "YES"):
-                            this_uuid = str(uuid.uuid1())
-                            asset_pin = getpass.getpass("pin:")
-                            asset_withdraw_result = mixinWalletInstance.withdraw_asset_to(address_id, withdraw_amount, "withdraw2"+address_pubkey, this_uuid, asset_pin)
-                            if(asset_withdraw_result.is_success):
-                                print("Your withdraw is successful , snapshot id: %s"%asset_withdraw_result.data.snapshot_id)
-                            else:
-                                print("Your withdraw is failed due to  %s"%asset_withdraw_result)
-
-        else:
-            print("no available asset to send")
+        if(balance_result.is_success):
+            all_asset = balance_result.data
+            none_zero_asset = []
+            for eachAsset in all_asset:
+                if (float(eachAsset.balance)) > 0:
+                    none_zero_asset.append(eachAsset)
+            i = 0
+            for eachNoneZero in none_zero_asset:
+                print("Send %s: %d" %(eachNoneZero.name.ljust(15), i))
+                i = i + 1
+            if (i > 0 and i <= len(none_zero_asset)):
+                selected_index = int(input("index number:"))
+                if selected_index < len(none_zero_asset):
+                    selected_asset = none_zero_asset[selected_index]
+                    print("send to mixin network uuid: 0")
+                    print("send to asset address     : 1")
+                    address_type = input("your selection:")
+                    if (address_type == "0"):
+                        destination_uuid = input("destination uuid:")
+                        amount_tosend     = input("quantity(%s remain):"%selected_asset.balance)
+                        memo_input = input("memo:")
+                        asset_pin_input = getpass.getpass("pin code:")
+                        this_uuid = str(uuid.uuid1())
+                        user_confirm = input("Type YES and press enter key to confirm: send %s %s to %s , memo:%s, trace id: %s:"%(amount_tosend, selected_asset.name, destination_uuid, memo_input, this_uuid))
+                        if (user_confirm == "YES"):
+                            transfer_result = mixinWalletInstance.transfer_to(destination_uuid, selected_asset.asset_id, amount_tosend, memo_input, this_uuid, asset_pin_input)
+                            if(transfer_result.is_success):
+                                print(transfer_result)
+                    if (address_type == "1"):
+                        withdraw_addresses_result = mixinWalletInstance.get_asset_withdrawl_addresses(selected_asset.asset_id)
+                        if withdraw_addresses_result.is_success:
+                            withdraw_addresses = withdraw_addresses_result.data
+                        else:
+                            withdraw_addresses = []
+                        i = 0
+                        for eachAddress in withdraw_addresses:
+                            btcAddress = strPresent_of_btc_withdrawaddress(eachAddress)
+                            print("%s:\n%s"%(str(i).ljust(10, '-'), btcAddress))
+                            i = i + 1
+                        user_choice = int(input("your choice:"))
+  
+                        if (user_choice < len(withdraw_addresses)):
+                            selected_withdraw_address = withdraw_addresses[user_choice]
+                            withdraw_amount = input("amount to withdraw:")
+                            address_id = selected_withdraw_address.address_id
+                            address_pubkey = selected_withdraw_address.public_key
+                            withdraw_asset_id = selected_withdraw_address.asset_id
+  
+                            address_selected = "%s"%(strPresent_of_asset_withdrawaddress(selected_withdraw_address, withdraw_asset_id))
+                            confirm = input("Type YES and press enter key to withdraw " + withdraw_amount + " " + selected_asset.name + " to \n" + address_selected + ":")
+                            if (confirm == "YES"):
+                                this_uuid = str(uuid.uuid1())
+                                asset_pin = getpass.getpass("pin:")
+                                asset_withdraw_result = mixinWalletInstance.withdraw_asset_to(address_id, withdraw_amount, "withdraw2"+address_pubkey, this_uuid, asset_pin)
+                                if(asset_withdraw_result.is_success):
+                                    print("Your withdraw is successful , snapshot id: %s"%asset_withdraw_result.data.snapshot_id)
+                                else:
+                                    print("Your withdraw is failed due to  %s"%asset_withdraw_result)
+  
+            else:
+                print("no available asset to send")
 
     if ( cmd == 'searchsnapshots'):
         timestamp = input("input timestamp, history after the time will be searched:")
@@ -318,13 +321,13 @@ while ( 1 > 0 ):
                             input_pin = getpass.getpass("pin code:")
      
                             transfer_result = mixinWalletInstance.transfer_to(exincore_api.EXINCORE_UUID, source_asset_id, amount_to_pay, memo_for_exin, this_uuid, input_pin)
-                            if(transfer_result != False):
+                            if(transfer_result.is_success):
                                 print(transfer_result)
-                                snapShotID = transfer_result.snapshot_id
+                                snapShotID = transfer_result.data.snapshot_id
                                 print("Pay " + amount_to_pay + " " + base_sym + " to ExinCore to buy " + estimated_target_amount + target_sym + " by uuid:" + this_uuid + ", you can verify the result on https://mixin.one/snapshots/" + snapShotID)
                                 checkResult = input("Type YES and press enter key to check latest snapshot:")
                                 if (checkResult == "YES"):
-                                    loadSnapshots(mixinWalletInstance, transfer_result.created_at, target_asset_id, 3)
+                                    loadSnapshots(mixinWalletInstance, transfer_result.data.created_at, target_asset_id, 3)
      
     if ( cmd == 'create' ):
         thisAccountRSAKeyPair = wallet_api.RSAKey4Mixin()
@@ -378,70 +381,72 @@ while ( 1 > 0 ):
                         print(transfer_result)
 
     if ( cmd == 'manageassets' ):
-        all_asset = mixinWalletInstance.get_balance()
-        asset_id_groups_in_myassets = []
-        for eachAsset in all_asset:
-            asset_id_groups_in_myassets.append(eachAsset.asset_id)
-        print("Your asset is\n===========")
-
-        i = 0
-        for eachAsset in all_asset:
-            print("%s: %d" %(eachAsset.name.ljust(15), i))
-            i += 1
-
-
-        user_choice = int(input("which asset:"))
-        if (user_choice < len(all_asset)):
-            selected_asset = all_asset[user_choice]
-            withdraw_addresses_result = mixinWalletInstance.get_asset_withdrawl_addresses(selected_asset.asset_id)
-            if withdraw_addresses_result.is_success:
-                withdraw_addresses = withdraw_addresses_result.data
-                print("%s: Total %d withdraw address "%(selected_asset.name, len(withdraw_addresses)))
-                i = 0
-                for eachAddress in withdraw_addresses:
-                    btcAddress = strPresent_of_btc_withdrawaddress(eachAddress, " " * 8).ljust(100)
-                    print("%s: %d\n%s"%("Remove".ljust(40, '-') ,i, btcAddress))
-                    i = i + 1
-                print("%s: %d"%("Add new address".ljust(40, '-'), i))
-                user_choice = int(input("your choice:"))
-                if (user_choice == (len(withdraw_addresses))):
-                    print("add new address")
-                    if (selected_asset.chain_id != EOS_ASSET_ID):
-                        deposit_address = input("address:")
-                        tag_content = input("write a tag:")
-                        Confirm = input("address %s with tag %s, Type YES and press enter key to confirm:"%(deposit_address, tag_content))
-                        if (Confirm == "YES"):
-                            input_pin = getpass.getpass("pin:")
-                            add_withdraw_addresses_result = mixinWalletInstance.create_address(selected_asset.asset_id, deposit_address, tag_content, asset_pin = input_pin)
-                            if add_withdraw_addresses_result.is_success:
-                                address_id = add_withdraw_addresses_result.data.address_id
-                                print("Added :" + str(add_withdraw_addresses_result.data))
-                            else:
-                                print("Failed to add deposit_address %s tag_content %s %s"%(deposit_address, tag_content, add_withdraw_addresses_result))
-                    else:
-                        deposit_account = input("account_name:")
-                        deposit_memo = input("account_tag(Very important if you withdraw to exchange):")
-                        tag_content = input("Tag for the address:")
-                        Confirm = input("EOS account: %s, memo: %s, summary: %s. Type YES and press enter key to confirm:"%(deposit_account, deposit_memo, tag_content))
-                        if (Confirm == "YES"):
-                            input_pin = getpass.getpass("pin:")
-                            add_withdraw_addresses_result = mixinWalletInstance.create_address(selected_asset.asset_id, "", tag_content, input_pin, deposit_account, deposit_memo)
-                            if add_withdraw_addresses_result.is_success:
-                                address_id = add_withdraw_addresses_result.data.address_id
-                                print("Added :" + str(add_withdraw_addresses_result.data))
-                            else:
-                                print("Failed to add deposit_address %s tag_content %s %s"%(deposit_address, tag_content, add_withdraw_addresses_result))
-
-
-                elif (user_choice < len(withdraw_addresses)):
-                    tobe_delete_address = withdraw_addresses[user_choice]
-                    print("Following address will be removed\n%s"%strPresent_of_btc_withdrawaddress(tobe_delete_address, " " * 8))
-                    remove_address_pin = getpass.getpass("asset pin code:")
-                    remove_address_confirm = input("Type YES and press enter key to confirm:")
-                    if (remove_address_confirm == "YES"):
-                        remove_address_result = mixinWalletInstance.remove_address(tobe_delete_address.address_id, remove_address_pin)
-                        print(remove_address_result)
-
+        balance_result = mixinWalletInstance.get_balance()
+        if balance_result.is_success:
+            all_asset = balance_result.data
+            asset_id_groups_in_myassets = []
+            for eachAsset in all_asset:
+                asset_id_groups_in_myassets.append(eachAsset.asset_id)
+            print("Your asset is\n===========")
+     
+            i = 0
+            for eachAsset in all_asset:
+                print("%s: %d" %(eachAsset.name.ljust(15), i))
+                i += 1
+     
+ 
+            user_choice = int(input("which asset:"))
+            if (user_choice < len(all_asset)):
+                selected_asset = all_asset[user_choice]
+                withdraw_addresses_result = mixinWalletInstance.get_asset_withdrawl_addresses(selected_asset.asset_id)
+                if withdraw_addresses_result.is_success:
+                    withdraw_addresses = withdraw_addresses_result.data
+                    print("%s: Total %d withdraw address "%(selected_asset.name, len(withdraw_addresses)))
+                    i = 0
+                    for eachAddress in withdraw_addresses:
+                        btcAddress = strPresent_of_btc_withdrawaddress(eachAddress, " " * 8).ljust(100)
+                        print("%s: %d\n%s"%("Remove".ljust(40, '-') ,i, btcAddress))
+                        i = i + 1
+                    print("%s: %d"%("Add new address".ljust(40, '-'), i))
+                    user_choice = int(input("your choice:"))
+                    if (user_choice == (len(withdraw_addresses))):
+                        print("add new address")
+                        if (selected_asset.chain_id != EOS_ASSET_ID):
+                            deposit_address = input("address:")
+                            tag_content = input("write a tag:")
+                            Confirm = input("address %s with tag %s, Type YES and press enter key to confirm:"%(deposit_address, tag_content))
+                            if (Confirm == "YES"):
+                                input_pin = getpass.getpass("pin:")
+                                add_withdraw_addresses_result = mixinWalletInstance.create_address(selected_asset.asset_id, deposit_address, tag_content, asset_pin = input_pin)
+                                if add_withdraw_addresses_result.is_success:
+                                    address_id = add_withdraw_addresses_result.data.address_id
+                                    print("Added :" + str(add_withdraw_addresses_result.data))
+                                else:
+                                    print("Failed to add deposit_address %s tag_content %s %s"%(deposit_address, tag_content, add_withdraw_addresses_result))
+                        else:
+                            deposit_account = input("account_name:")
+                            deposit_memo = input("account_tag(Very important if you withdraw to exchange):")
+                            tag_content = input("Tag for the address:")
+                            Confirm = input("EOS account: %s, memo: %s, summary: %s. Type YES and press enter key to confirm:"%(deposit_account, deposit_memo, tag_content))
+                            if (Confirm == "YES"):
+                                input_pin = getpass.getpass("pin:")
+                                add_withdraw_addresses_result = mixinWalletInstance.create_address(selected_asset.asset_id, "", tag_content, input_pin, deposit_account, deposit_memo)
+                                if add_withdraw_addresses_result.is_success:
+                                    address_id = add_withdraw_addresses_result.data.address_id
+                                    print("Added :" + str(add_withdraw_addresses_result.data))
+                                else:
+                                    print("Failed to add deposit_address %s tag_content %s %s"%(deposit_address, tag_content, add_withdraw_addresses_result))
+     
+ 
+                    elif (user_choice < len(withdraw_addresses)):
+                        tobe_delete_address = withdraw_addresses[user_choice]
+                        print("Following address will be removed\n%s"%strPresent_of_btc_withdrawaddress(tobe_delete_address, " " * 8))
+                        remove_address_pin = getpass.getpass("asset pin code:")
+                        remove_address_confirm = input("Type YES and press enter key to confirm:")
+                        if (remove_address_confirm == "YES"):
+                            remove_address_result = mixinWalletInstance.remove_address(tobe_delete_address.address_id, remove_address_pin)
+                            print(remove_address_result)
+     
     if ( cmd == 'verifypin' ):
         input_pin = getpass.getpass("input your account pin:")
         userInfo = mixinWalletInstance.verify_pin(input_pin)

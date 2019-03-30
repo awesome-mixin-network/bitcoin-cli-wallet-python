@@ -187,6 +187,12 @@ def Address_list(jsonInputList):
         result.append(Address(i))
     return result
 
+def Asset_list(jsonInputList):
+    result = []
+    for i in jsonInputList:
+        result.append(Asset(i))
+    return result
+
 
 
 
@@ -274,11 +280,9 @@ class WalletRecord():
                                                             self.pin,"")
     def get_balance(self):
         all_assets_json = self.mixinAPIInstance.getMyAssets()
-        all_assets = []
-        for eachJson in all_assets_json:
-            all_assets.append(Asset(eachJson))
+        all_balance = Mixin_Wallet_API_Result(all_assets_json, Asset_list)
+        return all_balance
 
-        return all_assets
     def get_singleasset_balance(self, input_asset_id):
         single_asset_json = self.mixinAPIInstance.getAsset(input_asset_id)
         return Mixin_Wallet_API_Result(single_asset_json, Asset)

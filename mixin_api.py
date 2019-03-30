@@ -286,7 +286,7 @@ class MIXIN_API:
     def getMyAssets(self, auth_token=""):
 
         assets_result = self.__genNetworkGetRequest('/assets', auth_token)
-        return assets_result.get("data")
+        return assets_result
 
     """
     Read self profile.
