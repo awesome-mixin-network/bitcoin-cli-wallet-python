@@ -198,23 +198,13 @@ def Asset_list(jsonInputList):
 
 
 class User_result():
-    def __init__(self, jsonInput):
-        if ("error" in jsonInput):
-            self.is_success = False
-            error_dict       = jsonInput.get("error")
-            self.status      = error_dict.get("status")
-            self.code        = error_dict.get("code")
-            self.description = error_dict.get("description")
-        else:
-            self.is_success = True
-            data_dict       = jsonInput.get("data")
-            self.user_id    = data_dict.get("user_id")
-            self.full_name  = data_dict.get("full_name")
-            
-            self.has_pin    = data_dict.get("has_pin")
-            self.type       = data_dict.get("type")
-            self.created_at = data_dict.get("created_at")
-            self.session_id = data_dict.get("session_id")
+    def __init__(self, data_dict):
+        self.user_id    = data_dict.get("user_id")
+        self.full_name  = data_dict.get("full_name")
+        self.has_pin    = data_dict.get("has_pin")
+        self.type       = data_dict.get("type")
+        self.created_at = data_dict.get("created_at")
+        self.session_id = data_dict.get("session_id")
             
     def __str__(self):
         """Format: Name on the first line
@@ -222,20 +212,16 @@ class User_result():
         separated by spaces.
         """
         result = "" 
-        if (self.is_success):
-            result += self.full_name + " is created at " + self.created_at + " with user id:" + self.user_id
-            if self.has_pin:
-                result += ". Pin is created"
-            else:
-                result += ". wallet need to create pin"
+        result += self.full_name + " is created at " + self.created_at + " with user id:" + self.user_id
+        if self.has_pin:
+            result += ". Pin is created"
         else:
-            result += "Failed to verify :%s, status: %s code: %s"%(self.description, self.status, self.code)
+            result += ". wallet need to create pin"
         return result
 
 class Transfer_result():
     def __init__(self, data_dict):
 
-        self.is_success = True
         self.amount       = data_dict.get("amount")
         self.memo         = data_dict.get("memo")
         self.snapshot_id  = data_dict.get("snapshot_id")
@@ -297,12 +283,12 @@ class WalletRecord():
         return withdraw_result
     def verify_pin(self, input_pin):
         verify_pin_result_json = self.mixinAPIInstance.verifyPin(input_pin)
-        user_result = User_result(verify_pin_result_json)
+        user_result = Mixin_Wallet_API_Result(verify_pin_result_json, User_result)
         return user_result
 
     def update_pin(self, input_old_pin, input_new_pin):
         update_pin_result_json = self.mixinAPIInstance.updatePin(input_new_pin, input_old_pin)
-        user_result = User_result(update_pin_result_json)
+        user_result = Mixin_Wallet_API_Result(update_pin_result_json, User_result)
         return user_result
     def my_snapshots_after(self, timestamp, asset_id = "", limit = 500, retry = 10):
         counter = 0

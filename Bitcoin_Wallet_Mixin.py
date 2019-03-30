@@ -453,7 +453,10 @@ while ( 1 > 0 ):
     if ( cmd == 'verifypin' ):
         input_pin = getpass.getpass("input your account pin:")
         userInfo = mixinWalletInstance.verify_pin(input_pin)
-        print(userInfo)
+        if(userInfo.is_success):
+            print(userInfo.data)
+        else:
+            print(userInfo)
 
     if ( cmd == 'updatepin' ):
 
