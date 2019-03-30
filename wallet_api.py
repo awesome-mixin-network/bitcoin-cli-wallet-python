@@ -50,16 +50,20 @@ class Mixin_Wallet_API_Result_Error():
 
 
 class Mixin_Wallet_API_Result():
-    def __init__(self, jsonInput, processFunc):
+    def __init__(self, jsonInput, processFunc = None):
         if ("error" in jsonInput):
             self.is_success = False
             self.error      = Mixin_Wallet_API_Result_Error(jsonInput.get("error"))
         else:
             self.is_success = True
-            self.data = processFunc(jsonInput.get("data"))
+            if processFunc != None:
+                self.data = processFunc(jsonInput.get("data"))
     def __str__(self):
         if(self.is_success):
-            return  str(self.data)
+            if hasattr(self, 'data'):
+                return  str(self.data)
+            else:
+                return "Success"
         else:
             return str(self.error)
 
@@ -284,7 +288,10 @@ class WalletRecord():
         createAddress_result = Mixin_Wallet_API_Result(create_result_json ,Address)
         return createAddress_result
     def remove_address(self, to_be_deleted_address_id, input_pin):
-        create_result_json = self.mixinAPIInstance.delAddress(to_be_deleted_address_id, input_pin)
+        remove_result_json = self.mixinAPIInstance.delAddress(to_be_deleted_address_id, input_pin)
+        removeAddress_result = Mixin_Wallet_API_Result(remove_result_json)
+        return removeAddress_result
+
         return create_result_json
     def transfer_to(self, destination_uuid, asset_id, amount_tosend, memo_input, this_uuid, asset_pin_input):
         transfer_result_json = self.mixinAPIInstance.transferTo(destination_uuid, asset_id, amount_tosend, memo_input, this_uuid, asset_pin_input)
