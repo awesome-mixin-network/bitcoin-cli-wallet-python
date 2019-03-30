@@ -178,7 +178,8 @@ while ( 1 > 0 ):
         for eachAssetID in MIXIN_DEFAULT_CHAIN_GROUP:
             if ( not (eachAssetID in asset_id_groups_in_myassets)):
                 eachAsset = mixinWalletInstance.get_singleasset_balance(eachAssetID)
-                print("%s: %s" %(eachAsset.name.ljust(15), eachAsset.balance))
+                if eachAsset.is_success:
+                    print("%s: %s" %(eachAsset.data.name.ljust(15), eachAsset.data.balance))
         print("===========")
     if (cmd == "deposit"):
 
@@ -193,7 +194,8 @@ while ( 1 > 0 ):
         for eachAssetID in MIXIN_DEFAULT_CHAIN_GROUP:
             if ( not (eachAssetID in asset_id_groups_in_myassets)):
                 this_asset = mixinWalletInstance.get_singleasset_balance(eachAssetID)
-                print("%s: %s" %(this_asset.name.ljust(15), strPresent_of_depositAddress_from(this_asset)))
+                if this_asset.is_success:
+                    print("%s: %s" %(this_asset.data.name.ljust(15), strPresent_of_depositAddress_from(this_asset.data)))
         print("===========")
 
     if (cmd == "send"):
@@ -305,22 +307,24 @@ while ( 1 > 0 ):
      
                     memo_for_exin = exincore_api.gen_memo_ExinBuy(target_asset_id)
  
-                    balance_base_asset = mixinWalletInstance.get_singleasset_balance(source_asset_id).balance
-                    amount_to_pay =  input("how much you want to pay, %s %s in your balance:"%(balance_base_asset, base_sym))
-                    this_uuid = str(uuid.uuid1())
-                    estimated_target_amount = str(float(amount_to_pay)/float(price_base_asset))
-                    confirm_pay = input("Pay " + amount_to_pay + " " + base_sym + " to buy " + estimated_target_amount + " " + target_sym + " on ExinCore" + ", Type YES and press enter key to confirm")
-                    if ( confirm_pay == "YES" ):
-                        input_pin = getpass.getpass("pin code:")
+                    single_balance = mixinWalletInstance.get_singleasset_balance(source_asset_id)
+                    if single_balance.is_success:
+                        balance_base_asset = single_balance.data.balance
+                        amount_to_pay =  input("how much you want to pay, %s %s in your balance:"%(balance_base_asset, base_sym))
+                        this_uuid = str(uuid.uuid1())
+                        estimated_target_amount = str(float(amount_to_pay)/float(price_base_asset))
+                        confirm_pay = input("Pay " + amount_to_pay + " " + base_sym + " to buy " + estimated_target_amount + " " + target_sym + " on ExinCore" + ", Type YES and press enter key to confirm")
+                        if ( confirm_pay == "YES" ):
+                            input_pin = getpass.getpass("pin code:")
      
-                        transfer_result = mixinWalletInstance.transfer_to(exincore_api.EXINCORE_UUID, source_asset_id, amount_to_pay, memo_for_exin, this_uuid, input_pin)
-                        if(transfer_result != False):
-                            print(transfer_result)
-                            snapShotID = transfer_result.snapshot_id
-                            print("Pay " + amount_to_pay + " " + base_sym + " to ExinCore to buy " + estimated_target_amount + target_sym + " by uuid:" + this_uuid + ", you can verify the result on https://mixin.one/snapshots/" + snapShotID)
-                            checkResult = input("Type YES and press enter key to check latest snapshot:")
-                            if (checkResult == "YES"):
-                                loadSnapshots(mixinWalletInstance, transfer_result.created_at, target_asset_id, 3)
+                            transfer_result = mixinWalletInstance.transfer_to(exincore_api.EXINCORE_UUID, source_asset_id, amount_to_pay, memo_for_exin, this_uuid, input_pin)
+                            if(transfer_result != False):
+                                print(transfer_result)
+                                snapShotID = transfer_result.snapshot_id
+                                print("Pay " + amount_to_pay + " " + base_sym + " to ExinCore to buy " + estimated_target_amount + target_sym + " by uuid:" + this_uuid + ", you can verify the result on https://mixin.one/snapshots/" + snapShotID)
+                                checkResult = input("Type YES and press enter key to check latest snapshot:")
+                                if (checkResult == "YES"):
+                                    loadSnapshots(mixinWalletInstance, transfer_result.created_at, target_asset_id, 3)
      
     if ( cmd == 'create' ):
         thisAccountRSAKeyPair = wallet_api.RSAKey4Mixin()
