@@ -47,11 +47,22 @@ class Mixin_Wallet_API_Result_Error():
     def __str__(self):
         return "%s with status: %s, code: %s"%(self.description, self.status, self.code)
 
+class Mixin_Wallet_HTTP_Result_Error():
+    def __init__(self, dictInput):
+        self.http_code        = dictInput
+    def __str__(self):
+        return "http visit failed with code %d "%(self.http_code)
+
+
+
 
 
 class Mixin_Wallet_API_Result():
     def __init__(self, jsonInput, processFunc = None):
-        if ("error" in jsonInput):
+        if ("httpfailed" in jsonInput):
+            self.is_success = False
+            self.error      = Mixin_Wallet_HTTP_Result_Error(jsonInput.get("httpfailed"))
+        elif ("error" in jsonInput):
             self.is_success = False
             self.error      = Mixin_Wallet_API_Result_Error(jsonInput.get("error"))
         else:
@@ -193,6 +204,12 @@ def Asset_list(jsonInputList):
         result.append(Asset(i))
     return result
 
+def Snapshot_list(jsonInputList):
+    result = []
+    for i in jsonInputList:
+        result.append(Snapshot(i))
+    return result
+
 
 
 
@@ -297,14 +314,15 @@ class WalletRecord():
         while((len(mysnapshots_result) < limit ) and (counter < retry) and ((time.time() - iso8601.parse_date(last_time).timestamp()) > 2)):
             counter += 1
             snapshots_json = self.mixinAPIInstance.account_snapshots_after(last_time, asset_id, 500)
-
-            snapshots_result = []
-            for eachJson in snapshots_json:
-                snapshots_result.append(Snapshot(eachJson))
-            last_time = snapshots_result[-1].created_at
-            for singleSnapShot in snapshots_result:
-                if (singleSnapShot.is_my_snap()):
-                    mysnapshots_result.append(singleSnapShot)
+            snapshots_list_result = Mixin_Wallet_API_Result(snapshots_json, Snapshot_list)
+            if(snapshots_list_result.is_success):
+                snapshots_result = snapshots_list_result.data
+                last_time = snapshots_result[-1].created_at
+                for singleSnapShot in snapshots_result:
+                    if (singleSnapShot.is_my_snap()):
+                        mysnapshots_result.append(singleSnapShot)
+            else:
+                break
         return mysnapshots_result
 
 

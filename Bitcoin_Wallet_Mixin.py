@@ -110,7 +110,9 @@ def strPresent_of_btc_withdrawaddress(thisAddress, prefix= " " * 8):
 def loadSnapshots(UserInstance, timestamp, asset_id = "", limit = 500):
     USDT_Snapshots_result_of_account = UserInstance.my_snapshots_after(timestamp, asset_id , limit)
     for singleSnapShot in USDT_Snapshots_result_of_account:
-       print(exincore_api.about_me(singleSnapShot))
+       is_exin = exincore_api.about_me(singleSnapShot)
+       if(is_exin):
+           print(is_exin)
 
 mixinApiBotInstance = MIXIN_API(mixin_config)
 
@@ -329,6 +331,8 @@ while ( 1 > 0 ):
                                 checkResult = input("Type YES and press enter key to check latest snapshot:")
                                 if (checkResult == "YES"):
                                     loadSnapshots(mixinWalletInstance, transfer_result.data.created_at, target_asset_id, 3)
+                            else:
+                                print(transfer_result)
      
     if ( cmd == 'create' ):
         thisAccountRSAKeyPair = wallet_api.RSAKey4Mixin()

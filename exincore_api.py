@@ -2,6 +2,7 @@ import requests
 import uuid
 import base64
 import umsgpack
+import binascii
 EXINCORE_UUID   = "61103d28-3ac2-44a2-ae34-bd956070dab1"
 
 
@@ -52,6 +53,8 @@ def memo_is_pay_to_exin(input_snapshot):
         else:
             return False
     except umsgpack.InsufficientDataException:
+        return False
+    except binascii.Error:
         return False
 
 EXIN_EXEC_TYPE_REQUEST = 0
@@ -127,6 +130,10 @@ def memo_is_pay_from_exin(input_snapshot):
         return exin_order
     except umsgpack.InsufficientDataException:
         return False
+    except binascii.Error:
+        return False
+
+
 
 
 def about_me(input_snapshot):

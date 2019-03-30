@@ -243,7 +243,7 @@ class MIXIN_API:
                 auth_token = token.decode('utf8')
         r = requests.get(url, headers={"Authorization": "Bearer " + auth_token, 'Content-Type': 'application/json', 'Content-length': '0'})
         result_obj = r.json()
-        return result_obj.get("data")
+        return result_obj
 
 
 
@@ -270,7 +270,7 @@ class MIXIN_API:
             return result_obj
         if (r.status_code == 500):
             print("path: %s, body:%s"%(path, body_in_json))
-            return False
+            return {"httpfailed":r.status_code}
         return (r.json())
     """
     ============
