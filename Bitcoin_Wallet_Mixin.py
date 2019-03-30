@@ -402,10 +402,10 @@ while ( 1 > 0 ):
                         input_pin = getpass.getpass("pin:")
                         add_withdraw_addresses_result = mixinWalletInstance.create_address(selected_asset.asset_id, deposit_address, tag_content, asset_pin = input_pin)
                         if add_withdraw_addresses_result.is_success:
-                            address_id = add_withdraw_addresses_result.address_id
-                            print("the address :" + deposit_address + " is added to your account with id:" + address_id)
+                            address_id = add_withdraw_addresses_result.data.address_id
+                            print("Added :" + str(add_withdraw_addresses_result.data))
                         else:
-                            print("deposit_address %s tag_content %s %s"%(deposit_address, tag_content, add_withdraw_addresses_result))
+                            print("Failed to add deposit_address %s tag_content %s %s"%(deposit_address, tag_content, add_withdraw_addresses_result))
                 else:
                     deposit_account = input("account_name:")
                     deposit_memo = input("account_tag(Very important if you withdraw to exchange):")
@@ -414,8 +414,12 @@ while ( 1 > 0 ):
                     if (Confirm == "YES"):
                         input_pin = getpass.getpass("pin:")
                         add_withdraw_addresses_result = mixinWalletInstance.create_address(selected_asset.asset_id, "", tag_content, input_pin, deposit_account, deposit_memo)
-                        address_id = add_withdraw_addresses_result.address_id
-                        print("the address  is added to your account with id:" + address_id)
+                        if add_withdraw_addresses_result.is_success:
+                            address_id = add_withdraw_addresses_result.data.address_id
+                            print("Added :" + str(add_withdraw_addresses_result.data))
+                        else:
+                            print("Failed to add deposit_address %s tag_content %s %s"%(deposit_address, tag_content, add_withdraw_addresses_result))
+
 
             elif (user_choice < len(withdraw_addresses)):
                 tobe_delete_address = withdraw_addresses[user_choice]

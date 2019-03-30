@@ -44,15 +44,24 @@ class Mixin_Wallet_API_Result_Error():
         self.status      = dictInput.get("status")
         self.code        = dictInput.get("code")
         self.description = dictInput.get("description")
+    def __str__(self):
+        return "%s with status: %s, code: %s"%(self.description, self.status, self.code)
+
 
 
 class Mixin_Wallet_API_Result():
-    def __init__(self, jsonInput):
+    def __init__(self, jsonInput, processFunc):
         if ("error" in jsonInput):
             self.is_success = False
             self.error      = Mixin_Wallet_API_Result_Error(jsonInput.get("error"))
         else:
             self.is_success = True
+            self.data = processFunc(jsonInput.get("data"))
+    def __str__(self):
+        if(self.is_success):
+            return  str(self.data)
+        else:
+            return str(self.error)
 
 class userInfo():
     def __init__(self, pin_token = "", session_id = "", user_id = ""):
@@ -139,20 +148,18 @@ class Snapshot():
     def is_my_snap(self):
         return self.user_id != None
 
-class Address(Mixin_Wallet_API_Result):
+class Address():
     def __init__(self, jsonInput):
-        super().__init__(jsonInput)
-        if self.is_success:
-            self.address_id   = jsonInput.get("address_id")
-            self.public_key   = jsonInput.get("public_key")
-            self.asset_id     = jsonInput.get("asset_id")
-            self.label        = jsonInput.get("label")
-            self.account_name = jsonInput.get("account_name")
-            self.account_tag  = jsonInput.get("account_tag")
-            self.fee          = jsonInput.get("fee")
-            self.reserve      = jsonInput.get("reserve")
-            self.dust         = jsonInput.get("dust")
-            self.updated_at   = jsonInput.get("updated_at")
+        self.address_id   = jsonInput.get("address_id")
+        self.public_key   = jsonInput.get("public_key")
+        self.asset_id     = jsonInput.get("asset_id")
+        self.label        = jsonInput.get("label")
+        self.account_name = jsonInput.get("account_name")
+        self.account_tag  = jsonInput.get("account_tag")
+        self.fee          = jsonInput.get("fee")
+        self.reserve      = jsonInput.get("reserve")
+        self.dust         = jsonInput.get("dust")
+        self.updated_at   = jsonInput.get("updated_at")
     def __str__(self):
         if self.is_success == False:
             result = "Failed :%s, status: %s code: %s"%(self.error.description, self.error.status, self.error.code)
@@ -274,7 +281,8 @@ class WalletRecord():
         return asset_addresses
     def create_address(self, asset_id, public_key = "", label = "", asset_pin = "", account_name = "", account_tag = ""):
         create_result_json = self.mixinAPIInstance.createAddress(asset_id, public_key , label , asset_pin , account_name , account_tag )
-        return Address(create_result_json)
+        createAddress_result = Mixin_Wallet_API_Result(create_result_json ,Address)
+        return createAddress_result
     def remove_address(self, to_be_deleted_address_id, input_pin):
         create_result_json = self.mixinAPIInstance.delAddress(to_be_deleted_address_id, input_pin)
         return create_result_json
