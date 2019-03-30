@@ -184,20 +184,21 @@ while ( 1 > 0 ):
             print("===========")
     if (cmd == "deposit"):
 
-        all_assets = mixinWalletInstance.get_balance()
+        balance_result = mixinWalletInstance.get_balance()
+        if (balance_result.is_success):
+            all_assets = balance_result.data
+            asset_id_groups_in_myassets = []
+            print("Your asset deposit address \n===========")
 
-        asset_id_groups_in_myassets = []
-        print("Your asset deposit address \n===========")
-
-        for eachAsset in all_assets:
-            print("%s: %s" %(eachAsset.name.ljust(15), strPresent_of_depositAddress_from(eachAsset)))
-            asset_id_groups_in_myassets.append(eachAsset.asset_id)
-        for eachAssetID in MIXIN_DEFAULT_CHAIN_GROUP:
-            if ( not (eachAssetID in asset_id_groups_in_myassets)):
-                this_asset = mixinWalletInstance.get_singleasset_balance(eachAssetID)
-                if this_asset.is_success:
-                    print("%s: %s" %(this_asset.data.name.ljust(15), strPresent_of_depositAddress_from(this_asset.data)))
-        print("===========")
+            for eachAsset in all_assets:
+                print("%s: %s" %(eachAsset.name.ljust(15), strPresent_of_depositAddress_from(eachAsset)))
+                asset_id_groups_in_myassets.append(eachAsset.asset_id)
+            for eachAssetID in MIXIN_DEFAULT_CHAIN_GROUP:
+                if ( not (eachAssetID in asset_id_groups_in_myassets)):
+                    this_asset = mixinWalletInstance.get_singleasset_balance(eachAssetID)
+                    if this_asset.is_success:
+                        print("%s: %s" %(this_asset.data.name.ljust(15), strPresent_of_depositAddress_from(this_asset.data)))
+            print("===========")
 
     if (cmd == "send"):
 
@@ -231,7 +232,7 @@ while ( 1 > 0 ):
                         if (user_confirm == "YES"):
                             transfer_result = mixinWalletInstance.transfer_to(destination_uuid, selected_asset.asset_id, amount_tosend, memo_input, this_uuid, asset_pin_input)
                             if(transfer_result.is_success):
-                                print(transfer_result)
+                                print(str(transfer_result.data))
                     if (address_type == "1"):
                         withdraw_addresses_result = mixinWalletInstance.get_asset_withdrawl_addresses(selected_asset.asset_id)
                         if withdraw_addresses_result.is_success:
@@ -322,7 +323,7 @@ while ( 1 > 0 ):
      
                             transfer_result = mixinWalletInstance.transfer_to(exincore_api.EXINCORE_UUID, source_asset_id, amount_to_pay, memo_for_exin, this_uuid, input_pin)
                             if(transfer_result.is_success):
-                                print(transfer_result)
+                                print(transfer_result.data)
                                 snapShotID = transfer_result.data.snapshot_id
                                 print("Pay " + amount_to_pay + " " + base_sym + " to ExinCore to buy " + estimated_target_amount + target_sym + " by uuid:" + this_uuid + ", you can verify the result on https://mixin.one/snapshots/" + snapShotID)
                                 checkResult = input("Type YES and press enter key to check latest snapshot:")
@@ -363,9 +364,11 @@ while ( 1 > 0 ):
 
 # c6d0c728-2624-429b-8e0d-d9d19b6592fa
     if ( cmd == 'allmoney' ):
-        AssetsInfo = mixinWalletInstance.get_balance()
-        availableAssset = []
-        my_pin = getpass.getpass("pin:")
+        balance_result = mixinWalletInstance.get_balance()
+        if(balance_result.is_success):
+            AssetsInfo = balance_result.data
+            availableAssset = []
+            my_pin = getpass.getpass("pin:")
         for eachAssetInfo in AssetsInfo: 
             if (eachAssetInfo.balance == "0"):
                 continue
@@ -377,8 +380,8 @@ while ( 1 > 0 ):
                 confirm_pay= input("type YES to pay " + eachAssetInfo.balance+ " to MASTER:")
                 if ( confirm_pay== "YES" ):
                     transfer_result = mixinWalletInstance.transfer_to(MASTER_UUID, eachAssetInfo.asset_id, eachAssetInfo.balance, "", this_uuid, my_pin)
-                    if(transfer_result != False):
-                        print(transfer_result)
+                    if(transfer_result.is_success):
+                        print(transfer_result.data)
 
     if ( cmd == 'manageassets' ):
         balance_result = mixinWalletInstance.get_balance()

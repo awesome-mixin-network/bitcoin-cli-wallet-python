@@ -233,38 +233,24 @@ class User_result():
         return result
 
 class Transfer_result():
-    def __init__(self, jsonInput):
-        if ("error" in jsonInput):
-            self.is_success = False
-            error_dict       = jsonInput.get("error")
-            self.status      = error_dict.get("status")
-            self.code        = error_dict.get("code")
-            self.description = error_dict.get("description")
-        else:
-            self.is_success = True
+    def __init__(self, data_dict):
 
-            data_dict         = jsonInput.get("data")
-            self.amount       = data_dict.get("amount")
-            self.memo         = data_dict.get("memo")
-            self.snapshot_id  = data_dict.get("snapshot_id")
-            
-            self.asset_id     = data_dict.get("asset_id")
-            self.type         = data_dict.get("type")
-            self.trace_id     = data_dict.get("trace_id")
-            self.opponent_id  = data_dict.get("opponent_id")
-            self.created_at   = data_dict.get("created_at")
+        self.is_success = True
+        self.amount       = data_dict.get("amount")
+        self.memo         = data_dict.get("memo")
+        self.snapshot_id  = data_dict.get("snapshot_id")
+        self.asset_id     = data_dict.get("asset_id")
+        self.type         = data_dict.get("type")
+        self.trace_id     = data_dict.get("trace_id")
+        self.opponent_id  = data_dict.get("opponent_id")
+        self.created_at   = data_dict.get("created_at")
             
     def __str__(self):
         """Format: Name on the first line
         and all grades on the second line,
         separated by spaces.
         """
-        result = "" 
-        if (self.is_success):
-            result += "Successfully transfer %s %s to %s at %s with trace id:%s, snapshot id:%s"%(self.amount, self.asset_id, self.opponent_id, self.created_at, self.trace_id, self.snapshot_id)
-        else:
-
-            result += "Failed to transfer due to :%s, status: %s code: %s"%(self.description, self.status, self.code)
+        result = "Successfully transfer %s %s to %s at %s with trace id:%s, snapshot id:%s"%(self.amount, self.asset_id, self.opponent_id, self.created_at, self.trace_id, self.snapshot_id)
         return result
 class WalletRecord():
     def __init__(self, pin, userid, session_id, pin_token, private_key):
@@ -301,8 +287,8 @@ class WalletRecord():
 
     def transfer_to(self, destination_uuid, asset_id, amount_tosend, memo_input, this_uuid, asset_pin_input):
         transfer_result_json = self.mixinAPIInstance.transferTo(destination_uuid, asset_id, amount_tosend, memo_input, this_uuid, asset_pin_input)
-        if(transfer_result_json != False):
-            return Transfer_result(transfer_result_json)
+        transfer_result = Mixin_Wallet_API_Result(transfer_result_json, Transfer_result)
+        return transfer_result
 
         print(transfer_result_json)
     def withdraw_asset_to(self, address_id, withdraw_amount, withdraw_memo, withdraw_this_uuid, withdraw_asset_pin):

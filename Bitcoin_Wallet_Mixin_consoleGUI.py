@@ -219,8 +219,8 @@ def send_confirm_chosen(button, wallet_asset_uuid_amount_pin_obj):
 
     transfer_result = wallet_obj.transfer_to(uuid_obj.get_edit_text(), asset_obj.asset_id, amount_obj.get_edit_text(), memo_obj.get_edit_text(), this_uuid, pin_obj.get_edit_text())
     if(transfer_result.is_success):
-        verify_url = "https://mixin.one/snapshots/" + transfer_result.snapshot_id
-        response = urwid.Text([str(transfer_result), ". You can verify on browser:\n%s"%verify_url])
+        verify_url = "https://mixin.one/snapshots/" + transfer_result.data.snapshot_id
+        response = urwid.Text([str(transfer_result.data), ". You can verify on browser:\n%s"%verify_url])
         done_button = menu_button(u'Ok', pop_to_account_menu)
         copy_button = menu_button_withobj(("copy %s to clip board"%(verify_url)), copy_content_to_system_clip, verify_url)
         top.open_box(urwid.Filler(urwid.Pile([response, copy_button, done_button])))
