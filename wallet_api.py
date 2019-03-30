@@ -295,7 +295,6 @@ class WalletRecord():
         removeAddress_result = Mixin_Wallet_API_Result(remove_result_json)
         return removeAddress_result
 
-        return create_result_json
     def transfer_to(self, destination_uuid, asset_id, amount_tosend, memo_input, this_uuid, asset_pin_input):
         transfer_result_json = self.mixinAPIInstance.transferTo(destination_uuid, asset_id, amount_tosend, memo_input, this_uuid, asset_pin_input)
         if(transfer_result_json != False):
@@ -304,7 +303,6 @@ class WalletRecord():
         print(transfer_result_json)
     def withdraw_asset_to(self, address_id, withdraw_amount, withdraw_memo, withdraw_this_uuid, withdraw_asset_pin):
         asset_withdraw_result_json = self.mixinAPIInstance.withdrawals(address_id, withdraw_amount, withdraw_memo, withdraw_this_uuid, withdraw_asset_pin)
-        print(asset_withdraw_result_json)
         withdraw_result = Mixin_Wallet_API_Result(asset_withdraw_result_json, Withdrawal)
         return withdraw_result
     def verify_pin(self, input_pin):

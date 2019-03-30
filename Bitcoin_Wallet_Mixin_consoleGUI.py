@@ -174,16 +174,9 @@ def remove_withdraw_address_confirm_chosen(button, wallet_asset_uuid_amount_pin_
     this_uuid  = ""
 
     remove_address_result = wallet_obj.remove_address(address_obj.address_id, pin_obj.get_edit_text())
-    if(remove_address_result != False):
-        #pop_to_account_menu(button)
-        response = urwid.Text([str(remove_address_result)])
-        done = menu_button(u'Ok', pop_to_account_menu)
-        top.open_box(urwid.Filler(urwid.Pile([response, done])))
-
-    else:
-        response = urwid.Text(["your remove is failed"])
-        done = menu_button(u'Ok', pop_to_account_menu)
-        top.open_box(urwid.Filler(urwid.Pile([response, done])))
+    response = urwid.Text([str(remove_address_result)])
+    done = menu_button(u'Ok', pop_to_account_menu)
+    top.open_box(urwid.Filler(urwid.Pile([response, done])))
 
 def verify_pin_confirm_chosen(button, wallet_asset_uuid_amount_pin_obj):
     wallet_obj = wallet_asset_uuid_amount_pin_obj[0]
