@@ -8,6 +8,7 @@ import umsgpack
 import base64
 import getpass
 import requests
+import os
 import wallet_api
 import exincore_api
 
@@ -120,6 +121,9 @@ padding = 70
 PromptMsg  = "Read first user from local file new_users.csv        : loaduser\n"
 PromptMsg += "Create account and append to new_users.csv           : create\n"
 PromptMsg += "Exit                                                 : q\n"
+
+PromptMsg_nolocalfile  = "Create account and append to new_users.csv           : create\n"
+PromptMsg_nolocalfile += "Exit                                                 : q\n"
 loadedPromptMsg  = "Read account asset non-zero balance".ljust(padding) + ": balance\n"
 loadedPromptMsg += "deposit asset ".ljust(padding) + ": deposit\n"
 loadedPromptMsg += "send asset ".ljust(padding) + ": send\n"
@@ -142,7 +146,10 @@ while ( 1 > 0 ):
     if (mixinApiNewUserInstance != None):
         cmd = input(loadedPromptMsg)
     else:
-        cmd = input(PromptMsg)
+        if os.path.isfile('new_users.csv'):
+            cmd = input(PromptMsg)
+        else:
+            cmd = input(PromptMsg_nolocalfile)
     if (cmd == 'q' ):
         exit()
     if (cmd == 'switch'):
