@@ -2,6 +2,7 @@ import urwid
 import wallet_api
 import pyperclip
 import mixin_asset_id_collection
+import os
 
 def menu_button(caption, callback):
     button = urwid.Button(caption)
@@ -462,6 +463,11 @@ def item_chosen(button):
     response = urwid.Text([u'You chose ', button.label, u'\n'])
     done = menu_button(u'Ok', exit_program)
     top.open_box(urwid.Filler(urwid.Pile([response, done])))
+def wallet_chosen_without_localwallet(button):
+    response = urwid.Text([u'No local wallet record, Please create one', u'\n'])
+    done = menu_button(u'Ok', pop_current_menu)
+    top.open_box(urwid.Filler(urwid.Pile([response, done])))
+
 
 def exit_program(button):
     raise urwid.ExitMainLoop()
@@ -478,13 +484,18 @@ def pop_current_and_more_more_menu(button):
 def pop_to_account_menu(button):
     top.back_to_account()
 def load_wallet(button):
-    wallet_records = wallet_api.load_wallet_csv_file('new_users.csv')
-    load_wallet_menu_buttons = []
-    for each_wallet in wallet_records:
-        load_wallet_menu_buttons.append(menu_button_withobj(each_wallet.userid, wallet_chosen, each_wallet))
+    if(os.path.isfile("new_users.csv")):
+        wallet_records = wallet_api.load_wallet_csv_file('new_users.csv')
+        load_wallet_menu_buttons = []
+        for each_wallet in wallet_records:
+            load_wallet_menu_buttons.append(menu_button_withobj(each_wallet.userid, wallet_chosen, each_wallet))
 
-    load_wallet_menu_buttons.append(menu_button(u'Back', pop_current_menu))
-    top.open_box(menu("select wallet", load_wallet_menu_buttons))
+        load_wallet_menu_buttons.append(menu_button(u'Back', pop_current_menu))
+        top.open_box(menu("select wallet", load_wallet_menu_buttons))
+    else:
+        response = urwid.Text([u'No local wallet record, Please create one', u'\n'])
+        done = menu_button(u'Ok', pop_current_menu)
+        top.open_box(urwid.Filler(urwid.Pile([response, done])))
 
 def create_wallet(button):
     raise urwid.ExitMainLoop()
