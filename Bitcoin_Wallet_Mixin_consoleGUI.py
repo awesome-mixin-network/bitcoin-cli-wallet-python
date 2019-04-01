@@ -31,7 +31,7 @@ def create_wallet_chosen(button):
     wallet_name_field = urwid.Edit(u'wallet name:\n')
     menu_buttons.append(wallet_name_field)
 
-    pin_code_field = urwid.Edit(u'pin:\n', mask=u"*")
+    pin_code_field = urwid.Edit(u'input 6 digits pin:\n', mask=u"*")
     menu_buttons.append(pin_code_field)
 
     url_token_field = urwid.Edit(u'free token url:\n')
