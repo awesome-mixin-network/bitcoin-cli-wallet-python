@@ -232,7 +232,7 @@ def create_wallet_confirm_chosen(button, wallet_name_pin_obj):
             response = urwid.Text(["Successfully created wallet with your pin"])
         else:
             response = urwid.Text(["Wallet is created, pin is not created. Update pin please"])
-        done_button = menu_button(u'Ok', pop_to_account_menu)
+        done_button = menu_button(u'Ok', pop_current_and_more_menu)
         top.open_box(urwid.Filler(urwid.Pile([response, done_button])))
     else:
         response = urwid.Text(["Failed to create account"])
