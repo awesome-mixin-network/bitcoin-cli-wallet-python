@@ -1,7 +1,6 @@
 import urwid
 import wallet_api
 import pyperclip
-import mixin_asset_id_collection
 import os
 import exincore_api
 import mixin_asset_id_collection
@@ -222,6 +221,7 @@ def create_wallet_confirm_chosen(button, wallet_name_pin_obj):
         create_wallet_result.data.private_key = thisAccountRSAKeyPair.private_key
         wallet_api.append_wallet_into_csv_file(create_wallet_result.data, "new_users.csv")
         new_wallet = wallet_api.WalletRecord("",create_wallet_result.data.user_id, create_wallet_result.data.session_id, create_wallet_result.data.pin_token, create_wallet_result.data.private_key)
+
         create_pin_result = new_wallet.update_pin("", pin_obj.get_edit_text())
         if(create_pin_result.is_success):
             response = urwid.Text(["Successfully created wallet with your pin"])
@@ -446,8 +446,16 @@ def balance_chosen(button, wallet_obj):
     balance_result = wallet_obj.get_balance()
     if (balance_result.is_success):
         all_assets = balance_result.data
-        for eachAsset in all_assets:
-            balance_chosen_menu_buttons.append(menu_button_withobj(eachAsset.name.ljust(15)+":"+ eachAsset.balance, asset_chosen, (wallet_obj, eachAsset)))
+        if (len(all_assets) == 0):
+            for eachAssetID in mixin_asset_id_collection.MIXIN_DEFAULT_CHAIN_GROUP:
+                this_asset = wallet_obj.get_singleasset_balance(eachAssetID)
+        else:
+            for eachAsset in all_assets:
+                balance_chosen_menu_buttons.append(menu_button_withobj(eachAsset.name.ljust(15)+":"+ eachAsset.balance, asset_chosen, (wallet_obj, eachAsset)))
+            usdt_balance_on_btc = wallet_obj.get_singleasset_balance(mixin_asset_id_collection.USDT_ASSET_ID)
+            if(usdt_balance_on_btc.data.balance == "0"):
+                balance_chosen_menu_buttons.append(menu_button_withobj(usdt_balance_on_btc.data.name.ljust(15)+":"+ usdt_balance_on_btc.data.balance, asset_chosen, (wallet_obj, usdt_balance_on_btc.data)))
+
 
     balance_chosen_menu_buttons.append(menu_button(u'Back', pop_current_menu))
     top.open_box(menu(u'user id:' + wallet_obj.userid, balance_chosen_menu_buttons))
@@ -640,11 +648,6 @@ def item_chosen(button):
     response = urwid.Text([u'You chose ', button.label, u'\n'])
     done = menu_button(u'Ok', exit_program)
     top.open_box(urwid.Filler(urwid.Pile([response, done])))
-def wallet_chosen_without_localwallet(button):
-    response = urwid.Text([u'No local wallet record, Please create one', u'\n'])
-    done = menu_button(u'Ok', pop_current_menu)
-    top.open_box(urwid.Filler(urwid.Pile([response, done])))
-
 
 def exit_program(button):
     raise urwid.ExitMainLoop()
@@ -673,9 +676,6 @@ def load_wallet(button):
         response = urwid.Text([u'No local wallet record, Please create one', u'\n'])
         done = menu_button(u'Ok', pop_current_menu)
         top.open_box(urwid.Filler(urwid.Pile([response, done])))
-
-def create_wallet(button):
-    raise urwid.ExitMainLoop()
 
 
 
