@@ -9,3 +9,4 @@ websocket-client==0.54.0
 u-msgpack-python
 urwid
 pyperclip
+iso8601
