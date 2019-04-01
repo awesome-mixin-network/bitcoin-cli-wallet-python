@@ -262,6 +262,51 @@ def update_pin_confirm_chosen(button, wallet_asset_uuid_amount_pin_obj):
         done = menu_button(u'Ok', pop_current_and_more_menu)
         top.open_box(urwid.Filler(urwid.Pile([response, done])))
 
+def Pay2Exin_confirm_chosen(button, wallet_asset_uuid_amount_pin_obj):
+    wallet_obj    = wallet_asset_uuid_amount_pin_obj[0]
+    asset_id_obj  = wallet_asset_uuid_amount_pin_obj[1]
+    uuid_exin_obj = wallet_asset_uuid_amount_pin_obj[2]
+    amount_obj    = wallet_asset_uuid_amount_pin_obj[3]
+    memo_obj      = wallet_asset_uuid_amount_pin_obj[4]
+    pin_obj       = wallet_asset_uuid_amount_pin_obj[5]
+    this_uuid     = ""
+
+    transfer_result = wallet_obj.transfer_to(uuid_exin_obj, asset_id_obj, amount_obj, memo_obj, this_uuid, pin_obj.get_edit_text())
+    if(transfer_result.is_success):
+        verify_url = "https://mixin.one/snapshots/" + transfer_result.data.snapshot_id
+        response = urwid.Text([str(transfer_result.data), ". You can verify on browser:\n%s"%verify_url])
+        done_button = menu_button(u'Ok', pop_to_account_menu)
+        copy_button = menu_button_withobj(("copy %s to clip board"%(verify_url)), copy_content_to_system_clip, verify_url)
+        top.open_box(urwid.Filler(urwid.Pile([response, copy_button, done_button])))
+    else:
+        response = urwid.Text([str(transfer_result)])
+        done = menu_button(u'Ok', pop_current_and_more_menu)
+        top.open_box(urwid.Filler(urwid.Pile([response, done])))
+
+
+def PayExin_input_pin_chosen(button, wallet_tradepair_amount):
+    wallet_obj     = wallet_tradepair_amount[0]
+    tradeprice_obj = wallet_tradepair_amount[1]
+    amount_obj     = wallet_tradepair_amount[2]
+    amount_to_pay = amount_obj.get_edit_text()
+    price_base_asset = tradeprice_obj.price
+    estimated_target_amount = str(float(amount_to_pay)/float(price_base_asset))
+
+
+    menu_buttons = []
+
+    memo_for_exin = exincore_api.gen_memo_ExinBuy(tradeprice_obj.echange_asset)
+
+    exe_pin_code_field = urwid.Edit(u'pin:\n', mask=u"*")
+    menu_buttons.append(exe_pin_code_field)
+    done = menu_button_withobj(u'Pay ', Pay2Exin_confirm_chosen, (wallet_obj, tradeprice_obj.base_asset, exincore_api.EXINCORE_UUID, amount_to_pay, memo_for_exin, exe_pin_code_field))
+
+
+    back = menu_button(u'Back', pop_current_menu)
+    menu_buttons.append(done)
+    menu_buttons.append(back)
+
+    top.open_box(menu(u'Pay ' + amount_to_pay + " " + tradeprice_obj.base_asset_symbol+ " to buy " + estimated_target_amount + " " + tradeprice_obj.exchange_asset_symbol + " on ExinCore" , menu_buttons))
 
 def send_confirm_chosen(button, wallet_asset_uuid_amount_pin_obj):
     wallet_obj = wallet_asset_uuid_amount_pin_obj[0]
@@ -314,29 +359,31 @@ def tradepair_sell_chosen(button, wallet_asset_obj):
 
 def tradepair_buy_chosen(button, wallet_asset_obj):
 
-    wallet_obj = wallet_asset_obj[0]
-    asset_obj  = wallet_asset_obj[1]
+    wallet_obj        = wallet_asset_obj[0]
+    base_asset_id     = wallet_asset_obj[1]
+    target_asset_id = wallet_asset_obj[2]
 
     menu_buttons = []
+    asset_price_result = exincore_api.fetchExinPrice(base_asset_id, target_asset_id)
+    #confirm price again
+    this_trade_price = asset_price_result[0]
+    minimum_pay_base_asset = this_trade_price.minimum_amount
+    maximum_pay_base_asset = this_trade_price.maximum_amount
+    price_base_asset       = this_trade_price.price
+    base_sym               = this_trade_price.base_asset_symbol
+    target_sym             = this_trade_price.exchange_asset_symbol
+     
+    single_balance = wallet_obj.get_singleasset_balance(base_asset_id)
+    if single_balance.is_success:
+        pay_amount_field = urwid.Edit(u'Pay amount(%s in your balance):\n'%single_balance.data.balance)
+        menu_buttons.append(pay_amount_field)
+        done = menu_button_withobj(u'Input pin to buy '+ this_trade_price.exchange_asset_symbol, PayExin_input_pin_chosen, (wallet_obj, this_trade_price, pay_amount_field))
 
-    exe_destination_uuid_field = urwid.Edit(u'Destination uuid:\n')
-    exe_amount_field = urwid.Edit(u'Amount:\n')
-    exe_memo_field = urwid.Edit(u'Memo:\n')
-    exe_pin_code_field = urwid.Edit(u'pin:\n', mask=u"*")
+        back = menu_button(u'Back', pop_current_menu)
+        menu_buttons.append(done)
+        menu_buttons.append(back)
 
-
-    menu_buttons.append(exe_destination_uuid_field)
-    menu_buttons.append(exe_amount_field)
-    menu_buttons.append(exe_memo_field)
-    menu_buttons.append(exe_pin_code_field)
-    done = menu_button_withobj(u'Send', send_confirm_chosen, (wallet_obj, asset_obj, exe_destination_uuid_field, exe_amount_field, exe_memo_field, exe_pin_code_field))
-    #done = menu_button_withobj(u'Send', show_content, (wallet_obj, asset_obj, "12", "23", "memo", "pin"))
-
-    back = menu_button(u'Back', pop_current_menu)
-    menu_buttons.append(done)
-    menu_buttons.append(back)
-
-    top.open_box(menu(u'Send ' + asset_obj.name, menu_buttons))
+    top.open_box(menu(this_trade_price.price + " " + this_trade_price.base_asset_symbol + " -> " + " 1 " + this_trade_price.exchange_asset_symbol, menu_buttons))
 
 
 def send_chosen(button, wallet_asset_obj):
@@ -410,7 +457,7 @@ def exin_chosen(button, wallet_obj):
 
     trade_asset_list = exincore_api.fetchExinPrice(mixin_asset_id_collection.USDT_ASSET_ID)
     for eachPair in trade_asset_list:
-        exin_trade_pair_chosen_menu_buttons.append(menu_button_withobj(str(eachPair), tradepair_chosen, (wallet_obj, eachPair)))
+        exin_trade_pair_chosen_menu_buttons.append(menu_button_withobj(str(eachPair), exin_tradepair_chosen, (wallet_obj, eachPair)))
 
     exin_trade_pair_chosen_menu_buttons.append(menu_button(u'Back', pop_current_menu))
     top.open_box(menu(u'Exin instant trade:', exin_trade_pair_chosen_menu_buttons))
@@ -565,17 +612,16 @@ def asset_chosen(button, wallet_asset_obj):
     asset_chosen_menu_buttons.append(menu_button(u'Back', pop_current_menu))
 
     top.open_box(menu(asset_obj.name.ljust(15)+":"+ asset_obj.balance, asset_chosen_menu_buttons))
-def tradepair_chosen(button, wallet_asset_obj):
+def exin_tradepair_chosen(button, wallet_asset_obj):
     wallet_obj = wallet_asset_obj[0]
     tradepair_obj  = wallet_asset_obj[1]
     tradepair_chosen_menu_buttons = []
-    tradepair_chosen_menu_buttons.append(menu_button_withobj("buy",  tradepair_buy_chosen, wallet_asset_obj))
-    tradepair_chosen_menu_buttons.append(menu_button_withobj("sell", tradepair_sell_chosen, wallet_asset_obj))
+    tradepair_chosen_menu_buttons.append(menu_button_withobj("buy",  tradepair_buy_chosen,  (wallet_obj, tradepair_obj.base_asset, tradepair_obj.echange_asset)))
+    tradepair_chosen_menu_buttons.append(menu_button_withobj("sell", tradepair_buy_chosen, (wallet_obj, tradepair_obj.echange_asset, tradepair_obj.base_asset)))
 
     tradepair_chosen_menu_buttons.append(menu_button(u'Back', pop_current_menu))
 
-    top.open_box(menu(asset_obj.name.ljust(15)+":"+ asset_obj.balance, tradepair_chosen_menu_buttons))
-
+    top.open_box(menu(tradepair_obj.base_asset_symbol + " <-> " + tradepair_obj.exchange_asset_symbol, tradepair_chosen_menu_buttons))
 
 
 def wallet_chosen(button, wallet_obj):
