@@ -3,6 +3,9 @@ from mixin_api import MIXIN_API
 from Crypto.PublicKey import RSA
 import iso8601
 import time
+import json
+import requests
+
 
 def pubkeyContent(inputContent):
     contentWithoutHeader= inputContent[len("-----BEGIN PUBLIC KEY-----") + 1:]
@@ -79,14 +82,14 @@ class Mixin_Wallet_API_Result():
             return str(self.error)
 
 class userInfo():
-    def __init__(self, pin_token = "", session_id = "", user_id = ""):
-        self.pin_token = pin_token
-        self.session_id = session_id
-        self.user_id = user_id
+    def __init__(self, userInfojson):
+        self.pin_token  = userInfojson.get("pin_token")
+        self.session_id = userInfojson.get("session_id")
+        self.user_id    = userInfojson.get("user_id")
     def fromcreateUserJson(self, userInfojson):
-        self.pin_token  = userInfojson.get("data").get("pin_token")
-        self.session_id = userInfojson.get("data").get("session_id")
-        self.user_id    = userInfojson.get("data").get("user_id")
+        self.pin_token  = userInfojson.get("pin_token")
+        self.session_id = userInfojson.get("session_id")
+        self.user_id    = userInfojson.get("user_id")
 
 class Static_Asset():
     def __init__(self, jsonInput):
@@ -255,6 +258,17 @@ class Transfer_result():
         """
         result = "Successfully transfer %s %s to %s at %s with trace id:%s, snapshot id:%s"%(self.amount, self.asset_id, self.opponent_id, self.created_at, self.trace_id, self.snapshot_id)
         return result
+def fetchTokenForCreateUser(body, url):
+    body_in_json = json.dumps(body)
+    headers = {
+        'Content-Type'  : 'application/json',
+    }
+    r = requests.post(url, json=body, headers=headers)
+    result_obj = r.json()
+    print(result_obj)
+    return result_obj.get("token")
+
+
 class WalletRecord():
     def __init__(self, pin, userid, session_id, pin_token, private_key):
        self.pin = pin
@@ -267,6 +281,11 @@ class WalletRecord():
                                                             self.session_id,
                                                             self.userid,
                                                             self.pin,"")
+
+    def create_wallet(self, session_key, account_name, token_for_create_wallet):
+        userInfoJson = self.mixinAPIInstance.createUser(session_key, account_name, token_for_create_wallet)
+        created_user_result = Mixin_Wallet_API_Result(userInfoJson, userInfo)
+        return created_user_result
     def get_balance(self):
         all_assets_json = self.mixinAPIInstance.getMyAssets()
         all_balance = Mixin_Wallet_API_Result(all_assets_json, Asset_list)

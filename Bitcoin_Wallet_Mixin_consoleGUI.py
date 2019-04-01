@@ -24,6 +24,28 @@ def menu(title, choices):
     body = [urwid.Text(title), urwid.Divider()]
     body.extend(choices)
     return urwid.ListBox(urwid.SimpleFocusListWalker(body))
+def create_wallet_chosen(button):
+    menu_buttons = []
+
+    wallet_name_field = urwid.Edit(u'wallet name:\n')
+    menu_buttons.append(wallet_name_field)
+
+    pin_code_field = urwid.Edit(u'pin:\n', mask=u"*")
+    menu_buttons.append(pin_code_field)
+
+    url_token_field = urwid.Edit(u'free token url:\n')
+    url_token_field.set_edit_text("http://freemixinapptoken.myrual.me/token")
+    menu_buttons.append(url_token_field)
+
+    done = menu_button_withobj(u'Create wallet', create_wallet_confirm_chosen, (wallet_api.WalletRecord("","","", "",""), wallet_name_field, pin_code_field, url_token_field))
+
+    back = menu_button(u'Back', pop_current_menu)
+    menu_buttons.append(done)
+    menu_buttons.append(back)
+
+    top.open_box(menu(u'Create a wallet', menu_buttons))
+
+
 def verify_pin_chosen(button, wallet_obj):
     menu_buttons = []
 
@@ -178,6 +200,37 @@ def remove_withdraw_address_confirm_chosen(button, wallet_asset_uuid_amount_pin_
     response = urwid.Text([str(remove_address_result)])
     done = menu_button(u'Ok', pop_to_account_menu)
     top.open_box(urwid.Filler(urwid.Pile([response, done])))
+
+def create_wallet_confirm_chosen(button, wallet_name_pin_obj):
+    wallet_obj = wallet_name_pin_obj[0]
+    name_obj   = wallet_name_pin_obj[1]
+    pin_obj    = wallet_name_pin_obj[2]
+    url_obj    = wallet_name_pin_obj[3]
+
+    thisAccountRSAKeyPair = wallet_api.RSAKey4Mixin()
+    body = {
+        "session_secret": thisAccountRSAKeyPair.session_key,
+        "full_name": name_obj.get_edit_text()
+    }
+
+    token2create = wallet_api.fetchTokenForCreateUser(body, url_obj.get_edit_text())
+
+    create_wallet_result = wallet_obj.create_wallet(thisAccountRSAKeyPair.session_key, name_obj.get_edit_text(), token2create)
+    if(create_wallet_result.is_success):
+        create_wallet_result.data.private_key = thisAccountRSAKeyPair.private_key
+        wallet_api.append_wallet_into_csv_file(create_wallet_result.data, "new_users.csv")
+        new_wallet = wallet_api.WalletRecord("",create_wallet_result.data.user_id, create_wallet_result.data.session_id, create_wallet_result.data.pin_token, create_wallet_result.data.private_key)
+        create_pin_result = new_wallet.update_pin("", pin_obj.get_edit_text())
+        if(create_pin_result.is_success):
+            response = urwid.Text(["Successfully created wallet with your pin"])
+        else:
+            response = urwid.Text(["Wallet is created, pin is not created. Update pin please"])
+        done_button = menu_button(u'Ok', pop_to_account_menu)
+        top.open_box(urwid.Filler(urwid.Pile([response, done_button])))
+    else:
+        response = urwid.Text(["Failed to create account"])
+        done = menu_button(u'Ok', pop_current_and_more_menu)
+        top.open_box(urwid.Filler(urwid.Pile([response, done])))
 
 def verify_pin_confirm_chosen(button, wallet_asset_uuid_amount_pin_obj):
     wallet_obj = wallet_asset_uuid_amount_pin_obj[0]
@@ -504,12 +557,7 @@ def create_wallet(button):
 
 menu_top = menu(u'Mixin pywallet', [
     menu_button(u'load wallet', load_wallet),
-    sub_menu(u'create wallet', [
-        sub_menu(u'Preferences', [
-            menu_button(u'Appearance', item_chosen),
-        ]),
-        menu_button(u'Lock Screen', item_chosen),
-    ]),
+    menu_button(u'create wallet', create_wallet_chosen),
     menu_button('exit', exit_program)
 ])
 
