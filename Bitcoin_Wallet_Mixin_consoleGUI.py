@@ -28,7 +28,7 @@ def menu(title, choices):
 def create_wallet_chosen(button):
     menu_buttons = []
 
-    wallet_name_field = urwid.Edit(u'wallet name:\n')
+    wallet_name_field = urwid.Edit(u'wallet name(less than 512 characters):\n')
     menu_buttons.append(wallet_name_field)
 
     pin_code_field = urwid.Edit(u'input 6 digits pin:\n', mask=u"*")
