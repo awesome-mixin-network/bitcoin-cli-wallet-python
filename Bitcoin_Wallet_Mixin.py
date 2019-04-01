@@ -136,14 +136,12 @@ loadedPromptMsg += "verify pin".ljust(padding) + ": verifypin\n"
 loadedPromptMsg += "updatepin".ljust(padding) + ": updatepin\n"
 loadedPromptMsg += "switch account".ljust(padding) + ": switch\n"
 
-global mixinApiNewUserInstance
 global mixinWalletInstance
 global mixin_account_name
-mixinApiNewUserInstance = None
 mixinWalletInstance = None
 mixin_account_name = None
 while ( 1 > 0 ):
-    if (mixinApiNewUserInstance != None):
+    if (mixinWalletInstance!= None):
         cmd = input(loadedPromptMsg)
     else:
         if os.path.isfile('new_users.csv'):
@@ -154,8 +152,6 @@ while ( 1 > 0 ):
         exit()
     if (cmd == 'switch'):
 
-        mixinApiNewUserInstance = None
-    print("Run...")
     if ( cmd == 'loaduser'):
         wallet_records = wallet_api.load_wallet_csv_file('new_users.csv')
         i = 0
@@ -166,11 +162,6 @@ while ( 1 > 0 ):
  
         selected_wallet = wallet_records[int(user_index)]
         mixinWalletInstance = selected_wallet
-        mixinApiNewUserInstance = generateMixinAPI(selected_wallet.private_key,
-                                                            selected_wallet.pin_token,
-                                                            selected_wallet.session_id,
-                                                            selected_wallet.userid,
-                                                            selected_wallet.pin,"")
     if ( cmd == 'balance' ):
         balance_result = mixinWalletInstance.get_balance()
         if balance_result.is_success:
