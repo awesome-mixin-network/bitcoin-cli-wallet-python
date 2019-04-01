@@ -27,7 +27,7 @@ class Asset_pair_price():
         result = "%s %s %s, exchange: %s base:%s target:%s"%(self.price.ljust(8), (self.base_asset_symbol)+"/"+self.exchange_asset_symbol.ljust(15), "min:"+self.minimum_amount+" max:"+ self.maximum_amount+ self.base_asset_symbol.ljust(20), self.supported_by_exchanges, self.base_asset, self.echange_asset)
         return result
 
-def fetchExinPrice(source_asset_id, target_asset_id = ""):
+def fetchExinPrice(source_asset_id , target_asset_id = ""):
     result_fetchPrice = requests.get('https://exinone.com/exincore/markets', params={'base_asset':source_asset_id, "exchange_asset":target_asset_id})
     exin_response = result_fetchPrice.json()
 
