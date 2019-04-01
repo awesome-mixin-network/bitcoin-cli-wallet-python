@@ -343,35 +343,26 @@ while ( 1 > 0 ):
      
     if ( cmd == 'create' ):
         thisAccountRSAKeyPair = wallet_api.RSAKey4Mixin()
-        account_name  = "Tom Bot"
+        account_name  = input("wallet name")
         print(thisAccountRSAKeyPair.session_key)
         body = {
             "session_secret": thisAccountRSAKeyPair.session_key,
             "full_name": account_name
         }
-        token_from_freeweb = mixinApiBotInstance.fetchTokenForCreateUser(body,  "http://freemixinapptoken.myrual.me/token")
-        userInfoJson = mixinApiBotInstance.createUser(thisAccountRSAKeyPair.session_key, account_name, token_from_freeweb)
-        print(userInfoJson)
-        newuserInfo = wallet_api.userInfo()
-        newuserInfo.fromcreateUserJson(userInfoJson)
-        newuserInfo.private_key = thisAccountRSAKeyPair.private_key
+        token_from_freeweb = wallet_api.fetchTokenForCreateUser(body,  "http://freemixinapptoken.myrual.me/token")
+        temp_wallet_instance = wallet_api.WalletRecord("","","", "","")
+        create_wallet_result = temp_wallet_instance.create_wallet(thisAccountRSAKeyPair.session_key, account_name, token_from_freeweb)
+        if(create_wallet_result.is_success):
+            print(str(create_wallet_result.data.user_id) + "is created")
+            create_wallet_result.data.private_key = thisAccountRSAKeyPair.private_key
+            wallet_api.append_wallet_into_csv_file(create_wallet_result.data, "new_users.csv")
 
-        print(newuserInfo.user_id)
-        input("pause")
-        wallet_api.append_wallet_into_csv_file(newuserInfo, 'new_users.csv')
-        mixinApiNewUserInstance = generateMixinAPI(newuserInfo.private_key,
-                                                    newuserInfo.pin_token,
-                                                    newuserInfo.session_id,
-                                                    newuserInfo.user_id,
-                                                    "","")
-        defauled_pin = getpass.getpass("input pin:")
-        pinInfo = mixinApiNewUserInstance.updatePin(defauled_pin,"")
-        print(pinInfo)
-        time.sleep(3)
-        pinInfo2 = mixinApiNewUserInstance.verifyPin(defauled_pin)
-        print(pinInfo2)
-        for eachAsset in MIXIN_DEFAULT_CHAIN_GROUP:
-            mixinApiNewUserInstance.getAsset(eachAsset)
+            new_wallet = wallet_api.WalletRecord("",create_wallet_result.data.user_id, create_wallet_result.data.session_id, create_wallet_result.data.pin_token, create_wallet_result.data.private_key)
+            defauled_pin = getpass.getpass("input pin:")
+            create_pin_result = new_wallet.update_pin("", defauled_pin)
+            if(create_pin_result.is_success):
+                print("pin is created")
+
 
 # c6d0c728-2624-429b-8e0d-d9d19b6592fa
     if ( cmd == 'allmoney' ):
