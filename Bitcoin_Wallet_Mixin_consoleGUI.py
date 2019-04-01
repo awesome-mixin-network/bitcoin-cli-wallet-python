@@ -94,7 +94,12 @@ def withdraw_asset_chosen(button, wallet_asset_obj):
     for each_withdraw_address in withdraw_addresses:
         select_to_detail = menu_button_withobj(each_withdraw_address.label, withdraw_asset_to_address_chosen, (wallet_obj, asset_obj, each_withdraw_address))
         menu_buttons.append(select_to_detail)
+    if (asset_obj.chain_id != mixin_asset_id_collection.EOS_ASSET_ID):
+        add_new_address = menu_button_withobj(u'Add new', add_withdraw_address_bitcoin_style, wallet_asset_obj)
+    else:
+        add_new_address = menu_button_withobj(u'Add new', add_withdraw_address_eos_style, wallet_asset_obj)
 
+    menu_buttons.append(add_new_address)
     back = menu_button(u'Back', pop_current_menu)
     menu_buttons.append(back)
 

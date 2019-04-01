@@ -265,7 +265,6 @@ def fetchTokenForCreateUser(body, url):
     }
     r = requests.post(url, json=body, headers=headers)
     result_obj = r.json()
-    print(result_obj)
     return result_obj.get("token")
 
 
