@@ -1,19 +1,18 @@
 # CLI/API Bitcoin and alter coin wallet and exchanger written in python script based
 ![cover](https://github.com/wenewzhang/mixin_labs-python-bot/raw/master/Bitcoin_python.jpg)
-This a command line and API bitcoin/altcoin wallet written in python script based on Mixin Network. It is a cold wallet based on Mixin Network, so no one can steal your Bitcoin. If someone managed to copy private file in your PC, they can not steal your asset if they don't know the asset pin. 
+### What is this?
+a cryptocurrency wallet based on Python and urwid. 
+### Why you need this?
 
-The wallet did not save your asset pin in local file.
+1. The wallet is transparent: It is a open source project. Every programmer can review the code.
+2. The wallet is secure     : You hold the wallet key. Nobody can steal your asset without the wallet key.
+3. The wallet is reliable   : It is based on a transparent and distributed blockchain : [Mixin Network](https://github.com/awesome-mixin-network/index_of_Mixin_Network_resource). The network launched it's main net on 29,Feb, 2019.
+4. The wallet is useful     : Not just hold Bitcoin, but also many altercoin(Ethereum, EOS, XRP...).
+5. The wallet is fast       : every payment happen on Mixin network can be confirmed in 1 second.
+6. The wallet is anonymous  : Every account can be created anonymously. Every payment is anonymous for public.
+7. The wallet is powerful   : Anonymous and instantly trade Bitcoin and altercoins, trade can be done in 2 seconds and still hold your asset in your wallet instead of centralized exchange. 
+8. The wallet is open       : You can sell or buy any ERC20 token in wallet through open exchange protocol Ocean.one
 
-
-The battery included python Bitcoin wallet can:
-* create unlimited Bitcoin wallet
-* read Bitcoin balance
-* Withdraw Bitcoin to another Bitcoin address
-* Hold 12 Other Blockchains token, LTC, Ethereum, Ethereum Classic, EOS, Doge, Dash, BCH, Zen, Nem, Ripple, Zcash, Sia.
-* Trade bitcoin inside wallet, Bitcoin is sent to your wallet in 1 second. No need register account or provide identity.(Support by [Exinone](https://exinone.com and [Ocean Exchange](https://ocean.one))
-* Sell any ERC20 token and EOS token inside wallet.(Support by [Ocean Exchange](https://ocean.one))
-
-Full Mixin network resource [index](https://github.com/awesome-mixin-network/index_of_Mixin_Network_resource)
 
 ## Python 3 installation:
 This tool is written in Python 3.7.2 So you need to install Python 3.7.2 or above.
@@ -48,38 +47,8 @@ $ python3 -V
 Python 3.7.2
 ```
 
-```bash
-root@n2:~ python3 -m venv -h
-usage: venv [-h] [--system-site-packages] [--symlinks | --copies] [--clear]
-            [--upgrade] [--without-pip] [--prompt PROMPT]
-            ENV_DIR [ENV_DIR ...]
-Creates virtual Python environments in one or more target directories.
-positional arguments:
-  ENV_DIR               A directory to create the environment in.
 
-optional arguments:
-  -h, --help            show this help message and exit
-  --system-site-packages
-                        Give the virtual environment access to the system
-                        site-packages dir.
-  --symlinks            Try to use symlinks rather than copies, when symlinks
-                        are not the default for the platform.
-  --copies              Try to use copies rather than symlinks, even when
-                        symlinks are the default for the platform.
-  --clear               Delete the contents of the environment directory if it
-                        already exists, before environment creation.
-  --upgrade             Upgrade the environment directory to use this version
-                        of Python, assuming Python has been upgraded in-place.
-  --without-pip         Skips installing or upgrading pip in the virtual
-                        environment (pip is bootstrapped by default)
-  --prompt PROMPT       Provides an alternative prompt prefix for this
-                        environment.
-
-Once an environment has been created, you may wish to activate it, e.g. by
-sourcing an activate script in its bin directory
-```
-
-## Clone the repo
+## Clone the repo and create python env
 
 ```bash
 git clone https://github.com/awesome-mixin-network/bitcoin-cli-wallet-python.git
@@ -87,21 +56,12 @@ cd bitcoin-cli-wallet-python
 python3 -m venv ./
 ```
 
-Run **python3 -m venv** , following file and folder are created:
-```bash
-wenewzha:mixin_labs-python-bot wenewzhang$ ls
-bin		include		lib		pyvenv.cfg
-```
-
-Once a virtual environment has been created, it can be “activated” using a script in the virtual environment’s binary directory.
+Active the env now
 ```bash
 source ./bin/activate
-(mixin_labs-python-bot) wenewzha:mixin_labs-python-bot wenewzhang$
 ```
-So that “python” or "pip" invoke from the virtual environment, and you can run installed scripts without having to use their full path.
 
 ## Install required packages by "virtual environment"
-
 
 Use pip to upgrade pip itself, and install required packages.
 ```bash
