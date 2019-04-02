@@ -4,14 +4,23 @@
 a cryptocurrency wallet based on Python and urwid. 
 ### Why you need this?
 
-1. The wallet is transparent: It is a open source project. Every programmer can review the code.
-2. The wallet is secure     : You hold the wallet key. Nobody can steal your asset without the wallet key.
-3. The wallet is reliable   : It is based on a transparent and distributed blockchain : [Mixin Network](https://github.com/awesome-mixin-network/index_of_Mixin_Network_resource). The network launched it's main net on 29,Feb, 2019.
-4. The wallet is useful     : Not just hold Bitcoin, but also many altercoin(Ethereum, EOS, XRP...).
-5. The wallet is fast       : every payment happen on Mixin network can be confirmed in 1 second.
-6. The wallet is anonymous  : Every account can be created anonymously. Every payment is anonymous for public.
-7. The wallet is powerful   : Anonymous and instantly trade Bitcoin and altercoins, trade can be done in 2 seconds and still hold your asset in your wallet instead of centralized exchange. 
-8. The wallet is open       : You can sell or buy any ERC20 token in wallet through open exchange protocol Ocean.one
+#### Transparent
+It is a open source project. Every programmer can review the code.
+#### Secure
+You hold the wallet key. Nobody can steal your asset without the wallet key.
+#### Reliable
+It is based on a transparent and distributed blockchain : [Mixin Network](https://github.com/awesome-mixin-network/index_of_Mixin_Network_resource). The network launched it's main net on 29,Feb, 2019.
+#### Useful
+Not just hold Bitcoin, but also many altercoin(Ethereum, EOS, XRP...).
+#### Fast
+Every payment happen on Mixin network can be confirmed in 1 second.
+#### Protect your privacy
+Every account can be created anonymously. Every payment is anonymous for public.
+#### Still powerful
+Anonymous and instantly trade Bitcoin and altercoins, asset still in your wallet instead of a centralized exchange. 
+#### Portal to an open world
+1. You can sell or buy any ERC20 token inside wallet through open exchange protocol Ocean.one
+2. You can play fair dice game
 
 
 ## Python 3 installation:
