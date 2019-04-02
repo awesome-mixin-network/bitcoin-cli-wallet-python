@@ -1,4 +1,4 @@
-# CLI/API Bitcoin and alter coin wallet and exchanger written in python script based
+# Bitcoin and alter coin wallet written in python
 ![cover](https://github.com/wenewzhang/mixin_labs-python-bot/raw/master/Bitcoin_python.jpg)
 ### What is this?
 a cryptocurrency wallet based on Python and urwid. 
