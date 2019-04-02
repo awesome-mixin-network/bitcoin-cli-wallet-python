@@ -1,4 +1,4 @@
-# Bitcoin and alter coin wallet written in python
+# Bitcoin and altcoins wallet written in python
 ![cover](https://github.com/wenewzhang/mixin_labs-python-bot/raw/master/Bitcoin_python.jpg)
 <p align="center">
 <a href="README-cn.md"><img src="https://img.shields.io/badge/language-中文文档-red.svg?longCache=true&style=flat-square"></a>
@@ -16,13 +16,13 @@ You hold the wallet key. Nobody can steal your asset without the wallet key.
 #### Reliable
 It is based on a transparent and distributed blockchain : [Mixin Network](https://github.com/awesome-mixin-network/index_of_Mixin_Network_resource). The network launched it's main net on 29,Feb, 2019.
 #### Useful
-Not just hold Bitcoin, but also many altercoin(Ethereum, EOS, XRP...).
+Not just hold Bitcoin, but also many altcoin(Ethereum, EOS, XRP...).
 #### Fast
 Every payment happen on Mixin network can be confirmed in 1 second.
 #### Protect your privacy
 Anonymously create account, anonymously pay and transfer cryptocurrency.
 #### Still powerful
-Instantly trade Bitcoin and altercoins, asset is in your wallet instead of a centralized exchange. 
+Instantly trade Bitcoin and altcoins, asset is in your wallet instead of a centralized exchange. 
 ![exin powered instant and anonymous trade](https://github.com/myrual/bitcoin-cli-wallet-python/raw/master/screen_trade_exin.png)
 #### Portal to an open world
 1. You can sell or buy any ERC20 token inside wallet through open exchange protocol Ocean.one
