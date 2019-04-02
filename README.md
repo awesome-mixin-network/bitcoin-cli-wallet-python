@@ -18,6 +18,7 @@ Every payment happen on Mixin network can be confirmed in 1 second.
 Anonymously create account, anonymously pay and transfer cryptocurrency.
 #### Still powerful
 Instantly trade Bitcoin and altercoins, asset is in your wallet instead of a centralized exchange. 
+![exin powered instant and anonymous trade](https://github.com/myrual/bitcoin-cli-wallet-python/raw/master/screen_trade_exin.png)
 #### Portal to an open world
 1. You can sell or buy any ERC20 token inside wallet through open exchange protocol Ocean.one
 2. You can play fair dice game
@@ -82,4 +83,4 @@ Run the code
 ```bash
 python Bitcoin_Wallet_Mixin_consoleGUI.py
 ```
-![gui](https://github.com/awesome-mixin-network/bitcoin-cli-wallet-python/raw/master/screen_shot_wallet.png)
+![gui](https://github.com/myrual/bitcoin-cli-wallet-python/raw/master/screen_wallet_open.png)
