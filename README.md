@@ -15,9 +15,9 @@ Not just hold Bitcoin, but also many altercoin(Ethereum, EOS, XRP...).
 #### Fast
 Every payment happen on Mixin network can be confirmed in 1 second.
 #### Protect your privacy
-Every account can be created anonymously. Every payment is anonymous for public.
+Anonymously create account, anonymously pay and transfer cryptocurrency.
 #### Still powerful
-Anonymous and instantly trade Bitcoin and altercoins, asset still in your wallet instead of a centralized exchange. 
+Instantly trade Bitcoin and altercoins, asset is in your wallet instead of a centralized exchange. 
 #### Portal to an open world
 1. You can sell or buy any ERC20 token inside wallet through open exchange protocol Ocean.one
 2. You can play fair dice game
