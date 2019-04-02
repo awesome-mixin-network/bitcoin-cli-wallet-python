@@ -11,6 +11,10 @@ import requests
 import os
 import wallet_api
 import exincore_api
+from datetime import datetime
+import pytz
+import time
+import mixin_asset_id_collection
 
 PIN             = "945689";
 PIN2            = "845689";
@@ -128,6 +132,7 @@ loadedPromptMsg  = "Read account asset non-zero balance".ljust(padding) + ": bal
 loadedPromptMsg += "deposit asset ".ljust(padding) + ": deposit\n"
 loadedPromptMsg += "send asset ".ljust(padding) + ": send\n"
 loadedPromptMsg += "Read transaction of my account".ljust(padding) + ": searchsnapshots\n"
+loadedPromptMsg += "Read transaction of my account".ljust(padding) + ": searchsnapshot\n"
 loadedPromptMsg += "Instant exchange BTC, USDT ... : ExinCore ".ljust(padding) + ": instanttrade\n"
 loadedPromptMsg += "Ocean.one protocol exchange : ocean.one".ljust(padding) + ": ocean\n"
 
@@ -151,6 +156,7 @@ while ( 1 > 0 ):
     if (cmd == 'q' ):
         exit()
     if (cmd == 'switch'):
+        mixinApiNewUserInstance = None
 
     if ( cmd == 'loaduser'):
         wallet_records = wallet_api.load_wallet_csv_file('new_users.csv')
@@ -270,6 +276,13 @@ while ( 1 > 0 ):
     if ( cmd == 'searchsnapshots'):
         timestamp = input("input timestamp, history after the time will be searched:")
         USDT_Snapshots_result_of_account = mixinWalletInstance.my_snapshots_after(timestamp, asset_id = "", limit = 500, retry = 100)
+        for singleSnapShot in USDT_Snapshots_result_of_account:
+            print(singleSnapShot)
+            print(exincore_api.about_me(singleSnapShot))
+
+    if ( cmd == 'searchsnapshot'):
+        timestamp = datetime.fromtimestamp(time.time() - 60*60*3, pytz.utc).isoformat()
+        USDT_Snapshots_result_of_account = mixinWalletInstance.my_snapshots_after(timestamp, asset_id = mixin_asset_id_collection.USDT_ASSET_ID, limit = 500, retry = 100)
         for singleSnapShot in USDT_Snapshots_result_of_account:
             print(singleSnapShot)
             print(exincore_api.about_me(singleSnapShot))

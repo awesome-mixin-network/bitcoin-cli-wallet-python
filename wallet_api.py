@@ -325,11 +325,12 @@ class WalletRecord():
         update_pin_result_json = self.mixinAPIInstance.updatePin(input_new_pin, input_old_pin)
         user_result = Mixin_Wallet_API_Result(update_pin_result_json, User_result)
         return user_result
+
     def my_snapshots_after(self, timestamp, asset_id = "", limit = 500, retry = 10):
         counter = 0
         mysnapshots_result = []
         last_time = timestamp
-        while((len(mysnapshots_result) < limit ) and (counter < retry) and ((time.time() - iso8601.parse_date(last_time).timestamp()) > 2)):
+        while((len(mysnapshots_result) < limit )  and ((time.time() - iso8601.parse_date(last_time).timestamp()) > 2)):
             counter += 1
             snapshots_json = self.mixinAPIInstance.account_snapshots_after(last_time, asset_id, 500)
             snapshots_list_result = Mixin_Wallet_API_Result(snapshots_json, Snapshot_list)
@@ -342,7 +343,6 @@ class WalletRecord():
             else:
                 break
         return mysnapshots_result
-
 
 def find_snapshot_of(client_id, in_snapshots):
     mysnapshots_result = []

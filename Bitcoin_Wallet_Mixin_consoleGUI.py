@@ -4,6 +4,9 @@ import pyperclip
 import os
 import exincore_api
 import mixin_asset_id_collection
+from datetime import datetime
+import pytz
+import time
 
 def menu_button(caption, callback):
     button = urwid.Button(caption)
@@ -313,6 +316,32 @@ def PayExin_input_pin_chosen(button, wallet_tradepair_amount):
 
     top.open_box(menu(u'Pay ' + amount_to_pay + " " + tradeprice_obj.base_asset_symbol+ " to buy " + estimated_target_amount + " " + tradeprice_obj.exchange_asset_symbol + " on ExinCore" , menu_buttons))
 
+def searchsnapshot_chosen(button, wallet_asset_offset_obj):
+
+    wallet_obj = wallet_asset_offset_obj[0]
+    asset_obj  = wallet_asset_offset_obj[1]
+    offset_obj = wallet_asset_offset_obj[2]
+    if hasattr(asset_obj, 'asset_id'):
+        input_asset_id = asset_obj.asset_id
+    else:
+        input_asset_id = ""
+    USDT_Snapshots_result_of_account = wallet_obj.my_snapshots_after(offset_obj, asset_id = input_asset_id, limit = 500, retry = 100) 
+    balance_chosen_menu_buttons = []
+
+    for singleSnapShot in USDT_Snapshots_result_of_account:
+        title = singleSnapShot.created_at.ljust(25) + " " + singleSnapShot.amount.ljust(10)+" "+ singleSnapShot.asset.name.ljust(20) + " opponent: " + singleSnapShot.opponent_id
+        balance_chosen_menu_buttons.append(menu_button_withobj(title, snapshot_chosen, singleSnapShot))
+
+    balance_chosen_menu_buttons.append(menu_button(u'Back', pop_current_menu))
+    top.open_box(menu(u'user id:' + wallet_obj.userid, balance_chosen_menu_buttons))
+
+def searchsnapshot_recent_n_day_chosen(button, wallet_asset_offset_obj):
+    wallet_obj = wallet_asset_offset_obj[0]
+    asset_obj  = wallet_asset_offset_obj[1]
+    recent_obj = wallet_asset_offset_obj[2].get_edit_text()
+    recent_n_day = float(recent_obj)
+    offset_obj = datetime.fromtimestamp(time.time() - recent_n_day * 24 * 60 * 60, pytz.utc).isoformat()
+    searchsnapshot_chosen(button, (wallet_obj, asset_obj, offset_obj))
 def send_confirm_chosen(button, wallet_asset_uuid_amount_pin_obj):
     wallet_obj = wallet_asset_uuid_amount_pin_obj[0]
     asset_obj  = wallet_asset_uuid_amount_pin_obj[1]
@@ -389,6 +418,38 @@ def tradepair_buy_chosen(button, wallet_asset_obj):
         menu_buttons.append(back)
 
     top.open_box(menu(this_trade_price.price + " " + this_trade_price.base_asset_symbol + " -> " + " 1 " + this_trade_price.exchange_asset_symbol, menu_buttons))
+
+
+def recent_transfer_chosen(button, wallet_asset_obj):
+
+    wallet_obj = wallet_asset_obj[0]
+    asset_obj  = wallet_asset_obj[1]
+
+    menu_buttons = []
+
+    recent3hours = menu_button_withobj(u'Recent 3    hours', searchsnapshot_chosen, (wallet_obj, asset_obj, datetime.fromtimestamp(time.time() - 60*60*3, pytz.utc).isoformat()))
+    recent30m =    menu_button_withobj(u'Recent 30 minutes', searchsnapshot_chosen, (wallet_obj, asset_obj, datetime.fromtimestamp(time.time() - 30*60, pytz.utc).isoformat()))
+    recent1m  =    menu_button_withobj(u'Recent 5  minutes', searchsnapshot_chosen, (wallet_obj, asset_obj, datetime.fromtimestamp(time.time() - 5*60, pytz.utc).isoformat()))
+
+    recent_n_field = urwid.Edit(u'Recent n day:\n')
+
+    recentnday  =  menu_button_withobj(u'Search last n day', searchsnapshot_recent_n_day_chosen, (wallet_obj, asset_obj, recent_n_field))
+
+    back = menu_button(u'Back', pop_current_menu)
+
+    menu_buttons.append(recent1m)
+    menu_buttons.append(recent30m)
+    menu_buttons.append(recent3hours)
+    menu_buttons.append(recent_n_field)
+    menu_buttons.append(recentnday)
+    menu_buttons.append(back)
+    if hasattr(asset_obj, 'name'):
+        input_asset_name = asset_obj.name
+    else:
+        input_asset_name = "all assets"
+
+    top.open_box(menu(u'Search snapshot of:' + input_asset_name, menu_buttons))
+
 
 
 def send_chosen(button, wallet_asset_obj):
@@ -612,12 +673,22 @@ def add_withdraw_address_bitcoin_style(button, wallet_asset_obj):
 
     top.open_box(menu(u'Add withdraw address for ' + asset_obj.name, menu_buttons))
 
+def snapshot_chosen(button, snapshot_obj):
+    snapshot_chosen_menu_buttons = []
+
+    snapshot_chosen_menu_buttons.append(urwid.Text([u'snapshot id'.ljust(20), u': ',snapshot_obj.snapshot_id, u'\n',u'created at'.ljust(20), u': ', snapshot_obj.created_at, u'\n',u'Asset Name'.ljust(20),': ', snapshot_obj.asset.name.ljust(20), u'\n', u'Amount'.ljust(20) ,': ', snapshot_obj.amount,u'\n',u'Opponent'.ljust(20),u': ',snapshot_obj.opponent_id, u'\n', u'Memo'.ljust(20),': ' ,snapshot_obj.memo]))
+
+    snapshot_chosen_menu_buttons.append(menu_button(u'Back', pop_current_menu))
+
+    top.open_box(menu("Snapshot", snapshot_chosen_menu_buttons))
+
 def asset_chosen(button, wallet_asset_obj):
     wallet_obj = wallet_asset_obj[0]
     asset_obj  = wallet_asset_obj[1]
     asset_chosen_menu_buttons = []
     asset_chosen_menu_buttons.append(menu_button_withobj("send to mixin account", send_chosen, wallet_asset_obj))
     asset_chosen_menu_buttons.append(menu_button_withobj("withdraw to other address", withdraw_asset_chosen, wallet_asset_obj))
+    asset_chosen_menu_buttons.append(menu_button_withobj(asset_obj.name + u" recent transfer", recent_transfer_chosen, wallet_asset_obj))
     asset_chosen_menu_buttons.append(menu_button_withobj("show deposit address", deposit_chosen, wallet_asset_obj))
     asset_chosen_menu_buttons.append(menu_button_withobj("manage withdraw contacts", manageasset_chosen, wallet_asset_obj))
     #asset_chosen_menu_buttons.append(menu_button_withobj("recent transaction", send_chosen, wallet_obj)) 
@@ -641,6 +712,7 @@ def wallet_chosen(button, wallet_obj):
     wallet_chosen_menu_buttons = []
     wallet_chosen_menu_buttons.append(menu_button_withobj("balance", balance_chosen, wallet_obj))
     #wallet_chosen_menu_buttons.append(menu_button_withobj("search snapshots", send_chosen, wallet_obj))
+    wallet_chosen_menu_buttons.append(menu_button_withobj(u"recent transfer", recent_transfer_chosen, (wallet_obj, "")))
     wallet_chosen_menu_buttons.append(menu_button_withobj("instant exchange token in exin", exin_chosen, wallet_obj))
     #wallet_chosen_menu_buttons.append(menu_button_withobj("ocean.one exchange", send_chosen, wallet_obj))
     wallet_chosen_menu_buttons.append(menu_button_withobj("verify pin", verify_pin_chosen, wallet_obj))
