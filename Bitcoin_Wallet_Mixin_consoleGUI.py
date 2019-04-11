@@ -7,6 +7,7 @@ import mixin_asset_id_collection
 from datetime import datetime
 import pytz
 import time
+import mixin_asset_id_collection
 
 def menu_button(caption, callback):
     button = urwid.Button(caption)

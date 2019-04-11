@@ -5,6 +5,14 @@ import iso8601
 import time
 import json
 import requests
+import base64
+import random
+import string
+
+def randomString(stringLength=10):
+    """Generate a random string of fixed length """
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for i in range(stringLength))
 
 
 def pubkeyContent(inputContent):
@@ -113,11 +121,11 @@ class Asset(Static_Asset):
     def deposit_address(self):
         result_desposit = []
         if(self.public_key != ""):
-            result_desposit.append({"title":"public_key", "value":self.public_key})
+            result_desposit.append({"title":"Deposit address", "value":self.public_key})
         if(self.account_name!= ""):
-            result_desposit.append({"title":"account_name", "value":self.account_name})
+            result_desposit.append({"title":"Deposit account name", "value":self.account_name})
         if(self.account_tag!= ""):
-            result_desposit.append({"title":"account_tag", "value":self.account_tag})
+            result_desposit.append({"title":"Deposit account tag", "value":self.account_tag})
         return result_desposit
 
 class Withdrawal():
@@ -316,6 +324,11 @@ class WalletRecord():
         asset_withdraw_result_json = self.mixinAPIInstance.withdrawals(address_id, withdraw_amount, withdraw_memo, withdraw_this_uuid, withdraw_asset_pin)
         withdraw_result = Mixin_Wallet_API_Result(asset_withdraw_result_json, Withdrawal)
         return withdraw_result
+    def fetch_my_profile(self):
+        my_profile_json = self.mixinAPIInstance.getMyProfile("")
+        user_result = Mixin_Wallet_API_Result(my_profile_json, User_result)
+        return user_result
+
     def verify_pin(self, input_pin):
         verify_pin_result_json = self.mixinAPIInstance.verifyPin(input_pin)
         user_result = Mixin_Wallet_API_Result(verify_pin_result_json, User_result)
@@ -359,6 +372,23 @@ def append_wallet_into_csv_file(this_wallet, file_name):
                             this_wallet.session_id,
                             this_wallet.user_id,
                             ""])
+
+def write_wallet_into_clear_base64_file(this_wallet, file_name):
+    finalObj = {"uid":this_wallet.user_id, "sid":this_wallet.session_id, "pintoken":this_wallet.pin_token, "key":this_wallet.private_key}
+    jsonstring_fromobj = json.dumps(finalObj)
+    base64decoded_json = base64.b64encode(jsonstring_fromobj.encode('utf-8')).decode('utf-8')
+    print(base64decoded_json)
+    with open(file_name, 'w') as wallet_file:
+        wallet_file.write(base64decoded_json)
+
+def load_wallet_from_clear_base64_file(file_name):
+    with open(file_name) as wallt_file:
+        base64decoded_json = wallt_file.read()
+        jsonstring = base64.b64decode(base64decoded_json)
+        wallet_dict = json.loads(jsonstring)
+        this_wallet_inst = WalletRecord("", wallet_dict.get("uid"), wallet_dict.get("sid"), wallet_dict.get("pintoken"), wallet_dict.get("key"))
+        return this_wallet_inst
+
 
 def load_wallet_csv_file(file_name):
     with open(file_name, newline='') as csvfile:
